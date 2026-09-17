@@ -1,111 +1,111 @@
 ﻿id,item_code,item_name,management_type,category_id,condition_code,stock_type,customer_id,manufacturer,model_number,serial_number,network_info,location_id,notes,is_active,sort_order,created_at,updated_at,created_by,updated_by,source_excel_rows
-1,ITEM-000001,デスクトップ本体,unit,,used,internal,,,,,,1,,1,1,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,4;5
-2,ITEM-000002,ファン,quantity,,used,internal,,,,,,1,,1,2,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,6
-3,ITEM-000003,有線マウス,quantity,,used,internal,,,,,,2,ラック上から2段目一番右のかご,1,3,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,7
-4,ITEM-000004,有線マウス,quantity,,new,internal,,,,,,2,,1,4,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,8
-5,ITEM-000005,無線マウス,quantity,,used,internal,,,,,,2,,1,5,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,9
-6,ITEM-000006,無線マウス,quantity,,new,internal,,,,,,2,,1,6,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,10
-7,ITEM-000007,BUFFALO PortableHD,quantity,,used,internal,,,,,,2,,1,7,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,11
-8,ITEM-000008,CD-R,quantity,,new,internal,,,,,,2,,1,8,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,12
-9,ITEM-000009,CD-R,quantity,,used,internal,,,,,,2,,1,9,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,13
-10,ITEM-000010,NFC/Felicaリーダー,quantity,,used,internal,,,,,,2,,1,10,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,14
-11,ITEM-000011,NFC/Felicaリーダー,quantity,,new,internal,,,,,,2,,1,11,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,15
-12,ITEM-000012,外付けテンキー,quantity,,new,internal,,,,,,2,,1,12,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,16
-13,ITEM-000013,外付けDVDリーダー,quantity,,used,internal,,,,,,2,,1,13,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,17
-14,ITEM-000014,HDD,quantity,,used,internal,,,,,,2,,1,14,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,18
-15,ITEM-000015,A to Bケーブル,quantity,,used,internal,,,,,,2,,1,15,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,19
-16,ITEM-000016,LAN→変換,quantity,,used,internal,,,,,,2,,1,16,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,20
-17,ITEM-000017,骨伝導イヤホン,quantity,,used,internal,,,,,,2,,1,17,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,21
-18,ITEM-000018,A to Cケーブル,quantity,,used,internal,,,,,,2,,1,18,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,22
-19,ITEM-000019,microSD→SD変換,quantity,,used,internal,,,,,,2,,1,19,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,23
-20,ITEM-000020,切り替え器,quantity,,used,internal,,,,,,2,4台接続可能,1,20,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,24
-21,ITEM-000021,Anker PowerExpand+7-in1 USB-C PD イーサネット ハブ,quantity,,used,internal,,,,,,2,,1,21,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,25
-22,ITEM-000022,クローンＨＤＤスタンド,quantity,,used,internal,,,,,,3,,1,22,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,26
-23,ITEM-000023,BUFFALO　ポータブルハードディスク,quantity,,used,internal,,,,,,3,,1,23,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,27
-24,ITEM-000024,I-O DATA SSD,quantity,,used,internal,,,,,,3,,1,24,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,28
-25,ITEM-000025,デジタルテスター,quantity,,used,internal,,,,,,3,,1,25,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,29
-26,ITEM-000026,ＬＡＮケーブルテスター,quantity,,used,internal,,,,,,3,,1,26,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,30
-27,ITEM-000027,TP-link 無線ＬＡＮルーター,quantity,,used,internal,,,,,,3,,1,27,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,31
-28,ITEM-000028,テスター棒用ワニ口クリップ,quantity,,used,internal,,,,,,3,,1,28,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,32
-29,ITEM-000029,スピーカーみたいなマイク,quantity,,used,internal,,,,,,3,,1,29,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,33
-30,ITEM-000030,恵会眠りSCAN用無線ＡＰ予備,unit,,used,internal,,,,,,4,,1,30,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,34;35
-31,ITEM-000031,恵会眠りSCAN用PoEスイッチラック固定用あまり,quantity,,used,internal,,,,,,4,,1,31,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,36
-32,ITEM-000032,Latitude 5490 交換済みバッテリー,quantity,,used,internal,,,,,,4,,1,32,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,37
-33,ITEM-000033,中継器,quantity,,used,internal,,,,,,4,永和会から回収したもの,1,33,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,38
-34,ITEM-000034,8口HUB,quantity,,used,internal,,,,,,5,,1,34,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,39
-35,ITEM-000035,8口HUB,quantity,,new,internal,,,,,,5,,1,35,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,40
-36,ITEM-000036,5口HUB,quantity,,used,internal,,,,,,5,,1,36,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,41
-37,ITEM-000037,5口HUB,quantity,,new,internal,,,,,,5,,1,37,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,42
-38,ITEM-000038,エンビパイプカッター,quantity,,used,internal,,,,,,5,,1,38,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,43
-39,ITEM-000039,REMOTE CABLE TESTER,quantity,,used,internal,,,,,,5,,1,39,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,44
-40,ITEM-000040,LANケーブル　先の部分（青）,quantity,,new,internal,,,,,,5,,1,40,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,45
-41,ITEM-000041,LANケーブル　先の部分（透明）,quantity,,new,internal,,,,,,5,,1,41,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,46
-42,ITEM-000042,LANケーブルカッター,quantity,,used,internal,,,,,,5,,1,42,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,47
-43,ITEM-000043,I-O DATA ディスプレイモニター,quantity,,used,internal,,,,,,6,,1,43,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,48
-44,ITEM-000044,WiFi Access Point（Meraki）,quantity,,used,internal,,,,,,7,,1,44,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,49
-45,ITEM-000045,Magic Keybord（小）,quantity,,used,internal,,,,,,7,,1,45,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,50
-46,ITEM-000046,Magic Keybord（大）,quantity,,used,internal,,,,,,7,,1,46,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,51
-47,ITEM-000047,無線キーボート（MagicKeybord除く）,quantity,,used,internal,,,,,,7,不良（キーボード外れ）１台あり,1,47,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,52
-48,ITEM-000048,Meraki 備品セット,quantity,,used,internal,,,,,,7,,1,48,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,53
-49,ITEM-000049,有線キーボード,quantity,,used,internal,,,,,,7,,1,49,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,54
-50,ITEM-000050,有線キーボード,quantity,,new,internal,,,,,,7,,1,50,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,55
-51,ITEM-000051,Meraki Go電源ケーブル,quantity,,new,internal,,,,,,7,PoEのもので使用しないため10→2に減らす　2025.12.26,1,51,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,56
-52,ITEM-000052,ケーブル配線保護カバー（LEOCASLET）,quantity,,,internal,,,,,,8,,1,52,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,57
-53,ITEM-000053,ケーブルカバー（Hiding Cables）,quantity,,,internal,,,,,,8,,1,53,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,58
-54,ITEM-000054,配線カバーマジックテープ,quantity,,used,internal,,,,,,8,,1,54,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,59
-55,ITEM-000055,SSDケース（AOTECH）,quantity,,used,internal,,,,,,1,,1,55,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,60
-56,ITEM-000056,mac mini,quantity,,used,internal,,,,,,1,,1,56,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,61
-57,ITEM-000057,一体型デスクトップ,quantity,,used,internal,,,,,,1,,1,57,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,62
-58,ITEM-000058,スキャンスナップＳ300,quantity,,used,internal,,,,,,1,,1,58,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,63
-59,ITEM-000059,ＡＴＫ電源ユニット（保証書類のみ）,unit,,,internal,,,,,,1,,1,59,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,64
-60,ITEM-000060,プロジェクターＧＤＰ１Ｗ,quantity,,,internal,,,,,,1,,1,60,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,65
-61,ITEM-000061,プロジェクター布,quantity,,,internal,,,,,,1,,1,61,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,66
-62,ITEM-000062,mac book Air,unit,,,internal,,,,,,1,20260916　森　　在庫棚,1,62,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,67
-63,ITEM-000063,HDMI,quantity,,,internal,,,,,,9,,1,63,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,68
-64,ITEM-000064,LANケーブル(大),quantity,,,internal,,,,,,,,1,64,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,69
-65,ITEM-000065,LANケーブル(小),quantity,,,internal,,,,,,,,1,65,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,70
-66,ITEM-000066,Displayケーブル,quantity,,,internal,,,,,,,,1,66,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,71
-67,ITEM-000067,Display電源ケーブル,quantity,,,internal,,,,,,,,1,67,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,72
-68,ITEM-000068,,quantity,,,internal,,,,,,,,1,68,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,73
-69,ITEM-000069,Cタイプケーブル,quantity,,,internal,,,,,,,,1,69,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,74
-70,ITEM-000070,USB C タイプケーブル,quantity,,,internal,,,,,,,,1,70,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,75
-71,ITEM-000071,ノート電源ケーブルNEC,quantity,,,internal,,,,,,,,1,71,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,76
-72,ITEM-000072,アナログケーブル　USB,quantity,,,internal,,,,,,,,1,72,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,77
-73,ITEM-000073,延長ケーブル(4口),quantity,,,internal,,,,,,,大村さんの机で使用中(設定作業の電源口数を増やすため),1,73,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,78
-74,ITEM-000074,延長ケーブル(6口),quantity,,,internal,,,,,,,,1,74,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,79
-75,ITEM-000075,延長ケーブル(7口),quantity,,,internal,,,,,,,,1,75,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,80
-76,ITEM-000076,延長ケーブル(10口),quantity,,new,internal,,,,,,,,1,76,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,81
-77,ITEM-000077,延長ケーブル(10口),quantity,,used,internal,,,,,,,,1,77,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,82
-78,ITEM-000078,IEC電源タップ(4口),quantity,,used,internal,,,,,,,,1,78,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,83
-79,ITEM-000079,デジタル to デジタルケーブル,quantity,,,internal,,,,,,,,1,79,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,84
-80,ITEM-000080,音声ケーブル,quantity,,,internal,,,,,,,,1,80,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,85
-81,ITEM-000081,電話線,quantity,,,internal,,,,,,,,1,81,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,86
-82,ITEM-000082,電話線アダプタ,quantity,,,internal,,,,,,,,1,82,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,87
-83,ITEM-000083,電話　分配ケーブル,quantity,,,internal,,,,,,,,1,83,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,88
-84,ITEM-000084,三口変換コネクタ,quantity,,,internal,,,,,,,,1,84,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,89
-85,ITEM-000085,ノート電源ケーブルPhilips,quantity,,,internal,,,,,,,,1,85,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,90
-86,ITEM-000086,Displayケーブル to HDMI　変換ケーブル,quantity,,new,internal,,,,,,,,1,86,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,91
-87,ITEM-000087,ヘッドセット,quantity,,used,internal,,,,,,10,スペシャルマッチ等で使用,1,87,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,92
-88,ITEM-000088,マウス（Lenovo）,quantity,,new,internal,,,,,,11,永和会様PC仕入時の特典,1,88,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,93
-89,ITEM-000089,マウス（Lenovo）,quantity,,new,internal,,,,,,11,腎愛会様PC仕入時の特典,1,89,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,94
-90,ITEM-000090,キーボード（Ｄｅｌｌ）,quantity,,new,internal,,,,,,12,腎愛会様PC仕入時の特典,1,90,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,95
-91,ITEM-000091,マウス（NEC）,quantity,,new,internal,,,,,,11,腎愛会様PC仕入時の特典,1,91,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,96
-92,ITEM-000092,キーボード（NEC）,quantity,,new,internal,,,,,,12,腎愛会様PC仕入時の特典,1,92,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,97
-93,ITEM-000093,無線ルーター（buffalo,quantity,,used,internal,,,,,,11,エミフル様機器入替分,1,93,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,98
+1,ITEM-000001,デスクトップ本体,unit,,used,internal,,,,,,1,,1,1,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,4;5
+2,ITEM-000002,ファン,quantity,,used,internal,,,,,,1,,1,2,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,6
+3,ITEM-000003,有線マウス,quantity,,used,internal,,,,,,2,ラック上から2段目一番右のかご,1,3,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,7
+4,ITEM-000004,有線マウス,quantity,,new,internal,,,,,,2,,1,4,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,8
+5,ITEM-000005,無線マウス,quantity,,used,internal,,,,,,2,,1,5,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,9
+6,ITEM-000006,無線マウス,quantity,,new,internal,,,,,,2,,1,6,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,10
+7,ITEM-000007,BUFFALO PortableHD,quantity,,used,internal,,,,,,2,,1,7,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,11
+8,ITEM-000008,CD-R,quantity,,new,internal,,,,,,2,,1,8,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,12
+9,ITEM-000009,CD-R,quantity,,used,internal,,,,,,2,,1,9,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,13
+10,ITEM-000010,NFC/Felicaリーダー,quantity,,used,internal,,,,,,2,,1,10,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,14
+11,ITEM-000011,NFC/Felicaリーダー,quantity,,new,internal,,,,,,2,,1,11,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,15
+12,ITEM-000012,外付けテンキー,quantity,,new,internal,,,,,,2,,1,12,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,16
+13,ITEM-000013,外付けDVDリーダー,quantity,,used,internal,,,,,,2,,1,13,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,17
+14,ITEM-000014,HDD,quantity,,used,internal,,,,,,2,,1,14,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,18
+15,ITEM-000015,A to Bケーブル,quantity,,used,internal,,,,,,2,,1,15,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,19
+16,ITEM-000016,LAN→変換,quantity,,used,internal,,,,,,2,,1,16,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,20
+17,ITEM-000017,骨伝導イヤホン,quantity,,used,internal,,,,,,2,,1,17,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,21
+18,ITEM-000018,A to Cケーブル,quantity,,used,internal,,,,,,2,,1,18,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,22
+19,ITEM-000019,microSD→SD変換,quantity,,used,internal,,,,,,2,,1,19,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,23
+20,ITEM-000020,切り替え器,quantity,,used,internal,,,,,,2,4台接続可能,1,20,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,24
+21,ITEM-000021,Anker PowerExpand+7-in1 USB-C PD イーサネット ハブ,quantity,,used,internal,,,,,,2,,1,21,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,25
+22,ITEM-000022,クローンＨＤＤスタンド,quantity,,used,internal,,,,,,3,,1,22,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,26
+23,ITEM-000023,BUFFALO　ポータブルハードディスク,quantity,,used,internal,,,,,,3,,1,23,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,27
+24,ITEM-000024,I-O DATA SSD,quantity,,used,internal,,,,,,3,,1,24,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,28
+25,ITEM-000025,デジタルテスター,quantity,,used,internal,,,,,,3,,1,25,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,29
+26,ITEM-000026,ＬＡＮケーブルテスター,quantity,,used,internal,,,,,,3,,1,26,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,30
+27,ITEM-000027,TP-link 無線ＬＡＮルーター,quantity,,used,internal,,,,,,3,,1,27,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,31
+28,ITEM-000028,テスター棒用ワニ口クリップ,quantity,,used,internal,,,,,,3,,1,28,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,32
+29,ITEM-000029,スピーカーみたいなマイク,quantity,,used,internal,,,,,,3,,1,29,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,33
+30,ITEM-000030,恵会眠りSCAN用無線ＡＰ予備,unit,,used,internal,,,,,,4,,1,30,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,34;35
+31,ITEM-000031,恵会眠りSCAN用PoEスイッチラック固定用あまり,quantity,,used,internal,,,,,,4,,1,31,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,36
+32,ITEM-000032,Latitude 5490 交換済みバッテリー,quantity,,used,internal,,,,,,4,,1,32,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,37
+33,ITEM-000033,中継器,quantity,,used,internal,,,,,,4,永和会から回収したもの,1,33,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,38
+34,ITEM-000034,8口HUB,quantity,,used,internal,,,,,,5,,1,34,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,39
+35,ITEM-000035,8口HUB,quantity,,new,internal,,,,,,5,,1,35,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,40
+36,ITEM-000036,5口HUB,quantity,,used,internal,,,,,,5,,1,36,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,41
+37,ITEM-000037,5口HUB,quantity,,new,internal,,,,,,5,,1,37,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,42
+38,ITEM-000038,エンビパイプカッター,quantity,,used,internal,,,,,,5,,1,38,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,43
+39,ITEM-000039,REMOTE CABLE TESTER,quantity,,used,internal,,,,,,5,,1,39,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,44
+40,ITEM-000040,LANケーブル　先の部分（青）,quantity,,new,internal,,,,,,5,,1,40,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,45
+41,ITEM-000041,LANケーブル　先の部分（透明）,quantity,,new,internal,,,,,,5,,1,41,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,46
+42,ITEM-000042,LANケーブルカッター,quantity,,used,internal,,,,,,5,,1,42,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,47
+43,ITEM-000043,I-O DATA ディスプレイモニター,quantity,,used,internal,,,,,,6,,1,43,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,48
+44,ITEM-000044,WiFi Access Point（Meraki）,quantity,,used,internal,,,,,,7,,1,44,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,49
+45,ITEM-000045,Magic Keybord（小）,quantity,,used,internal,,,,,,7,,1,45,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,50
+46,ITEM-000046,Magic Keybord（大）,quantity,,used,internal,,,,,,7,,1,46,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,51
+47,ITEM-000047,無線キーボート（MagicKeybord除く）,quantity,,used,internal,,,,,,7,不良（キーボード外れ）１台あり,1,47,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,52
+48,ITEM-000048,Meraki 備品セット,quantity,,used,internal,,,,,,7,,1,48,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,53
+49,ITEM-000049,有線キーボード,quantity,,used,internal,,,,,,7,,1,49,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,54
+50,ITEM-000050,有線キーボード,quantity,,new,internal,,,,,,7,,1,50,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,55
+51,ITEM-000051,Meraki Go電源ケーブル,quantity,,new,internal,,,,,,7,PoEのもので使用しないため10→2に減らす　2025.12.26,1,51,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,56
+52,ITEM-000052,ケーブル配線保護カバー（LEOCASLET）,quantity,,,internal,,,,,,8,,1,52,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,57
+53,ITEM-000053,ケーブルカバー（Hiding Cables）,quantity,,,internal,,,,,,8,,1,53,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,58
+54,ITEM-000054,配線カバーマジックテープ,quantity,,used,internal,,,,,,8,,1,54,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,59
+55,ITEM-000055,SSDケース（AOTECH）,quantity,,used,internal,,,,,,1,,1,55,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,60
+56,ITEM-000056,mac mini,quantity,,used,internal,,,,,,1,,1,56,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,61
+57,ITEM-000057,一体型デスクトップ,quantity,,used,internal,,,,,,1,,1,57,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,62
+58,ITEM-000058,スキャンスナップＳ300,quantity,,used,internal,,,,,,1,,1,58,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,63
+59,ITEM-000059,ＡＴＫ電源ユニット（保証書類のみ）,unit,,,internal,,,,,,1,,1,59,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,64
+60,ITEM-000060,プロジェクターＧＤＰ１Ｗ,quantity,,,internal,,,,,,1,,1,60,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,65
+61,ITEM-000061,プロジェクター布,quantity,,,internal,,,,,,1,,1,61,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,66
+62,ITEM-000062,mac book Air,unit,,,internal,,,,,,1,20260916　森　　在庫棚,1,62,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,67
+63,ITEM-000063,HDMI,quantity,,,internal,,,,,,9,,1,63,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,68
+64,ITEM-000064,LANケーブル(大),quantity,,,internal,,,,,,,,1,64,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,69
+65,ITEM-000065,LANケーブル(小),quantity,,,internal,,,,,,,,1,65,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,70
+66,ITEM-000066,Displayケーブル,quantity,,,internal,,,,,,,,1,66,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,71
+67,ITEM-000067,Display電源ケーブル,quantity,,,internal,,,,,,,,1,67,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,72
+68,ITEM-000068,,quantity,,,internal,,,,,,,,1,68,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,73
+69,ITEM-000069,Cタイプケーブル,quantity,,,internal,,,,,,,,1,69,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,74
+70,ITEM-000070,USB C タイプケーブル,quantity,,,internal,,,,,,,,1,70,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,75
+71,ITEM-000071,ノート電源ケーブルNEC,quantity,,,internal,,,,,,,,1,71,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,76
+72,ITEM-000072,アナログケーブル　USB,quantity,,,internal,,,,,,,,1,72,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,77
+73,ITEM-000073,延長ケーブル(4口),quantity,,,internal,,,,,,,大村さんの机で使用中(設定作業の電源口数を増やすため),1,73,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,78
+74,ITEM-000074,延長ケーブル(6口),quantity,,,internal,,,,,,,,1,74,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,79
+75,ITEM-000075,延長ケーブル(7口),quantity,,,internal,,,,,,,,1,75,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,80
+76,ITEM-000076,延長ケーブル(10口),quantity,,new,internal,,,,,,,,1,76,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,81
+77,ITEM-000077,延長ケーブル(10口),quantity,,used,internal,,,,,,,,1,77,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,82
+78,ITEM-000078,IEC電源タップ(4口),quantity,,used,internal,,,,,,,,1,78,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,83
+79,ITEM-000079,デジタル to デジタルケーブル,quantity,,,internal,,,,,,,,1,79,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,84
+80,ITEM-000080,音声ケーブル,quantity,,,internal,,,,,,,,1,80,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,85
+81,ITEM-000081,電話線,quantity,,,internal,,,,,,,,1,81,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,86
+82,ITEM-000082,電話線アダプタ,quantity,,,internal,,,,,,,,1,82,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,87
+83,ITEM-000083,電話　分配ケーブル,quantity,,,internal,,,,,,,,1,83,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,88
+84,ITEM-000084,三口変換コネクタ,quantity,,,internal,,,,,,,,1,84,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,89
+85,ITEM-000085,ノート電源ケーブルPhilips,quantity,,,internal,,,,,,,,1,85,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,90
+86,ITEM-000086,Displayケーブル to HDMI　変換ケーブル,quantity,,new,internal,,,,,,,,1,86,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,91
+87,ITEM-000087,ヘッドセット,quantity,,used,internal,,,,,,10,スペシャルマッチ等で使用,1,87,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,92
+88,ITEM-000088,マウス（Lenovo）,quantity,,new,internal,,,,,,11,永和会様PC仕入時の特典,1,88,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,93
+89,ITEM-000089,マウス（Lenovo）,quantity,,new,internal,,,,,,11,腎愛会様PC仕入時の特典,1,89,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,94
+90,ITEM-000090,キーボード（Ｄｅｌｌ）,quantity,,new,internal,,,,,,12,腎愛会様PC仕入時の特典,1,90,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,95
+91,ITEM-000091,マウス（NEC）,quantity,,new,internal,,,,,,11,腎愛会様PC仕入時の特典,1,91,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,96
+92,ITEM-000092,キーボード（NEC）,quantity,,new,internal,,,,,,12,腎愛会様PC仕入時の特典,1,92,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,97
+93,ITEM-000093,無線ルーター（buffalo,quantity,,used,internal,,,,,,11,エミフル様機器入替分,1,93,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,98
 94,ITEM-000094,Display to Mini Display,quantity,,new,internal,,,,,,,"ディスプレイ端子⇔ミニディスプレイ端子
-井上新規記載【70のDisplayケーブルのこと？】",1,94,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,99
-95,ITEM-000095,USB B タイプケーブル,quantity,,used,internal,,,,,,,井上新規記載,1,95,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,100
-96,ITEM-000096,USBーA延長,quantity,,used,internal,,,,,,,井上新規記載,1,96,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,101
-97,ITEM-000097,Cタイプケ変換,quantity,,used,internal,,,,,,,,1,97,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,102
-98,ITEM-000098,ACアダプタ：TOSHIBA PA3755U,quantity,,used,internal,,,,,,,,1,98,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,103
-99,ITEM-000099,ACアダプタ：TOSHIBA PA3714U,quantity,,used,internal,,,,,,,,1,99,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,104
-100,ITEM-000100,ACアダプタ：HYT-1207000,quantity,,used,internal,,,,,,,,1,100,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,105
-101,ITEM-000101,ACアダプタ：DEL HKA65NM201,quantity,,used,internal,,,,,,,,1,101,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,106
-102,ITEM-000102,ACアダプタ：DEL HA65NS5-00,quantity,,used,internal,,,,,,,,1,102,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,107
-103,ITEM-000103,ACアダプタ：DEL LA45NN140,quantity,,used,internal,,,,,,,,1,103,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,108
-104,ITEM-000104,ACアダプタ：ELECTRONICS,quantity,,used,internal,,,,,,,,1,104,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,109
-105,ITEM-000105,ACアダプタ：Lenovo ADLX45NCC2A,quantity,,used,internal,,,,,,,,1,105,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,110
-106,ITEM-000106,ACアダプタ：A12-040N2A,quantity,,used,internal,,,,,,,,1,106,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,111
-107,ITEM-000107,ACアダプタ：Canon K30359,quantity,,used,internal,,,,,,,,1,107,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,112
-108,ITEM-000108,ACアダプタ：J651-1903420DI,quantity,,used,internal,,,,,,,,1,108,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,113
-109,ITEM-000109,ハードディスクケース,quantity,,used,internal,,,,,,,,1,109,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,114
+井上新規記載【70のDisplayケーブルのこと？】",1,94,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,99
+95,ITEM-000095,USB B タイプケーブル,quantity,,used,internal,,,,,,,井上新規記載,1,95,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,100
+96,ITEM-000096,USBーA延長,quantity,,used,internal,,,,,,,井上新規記載,1,96,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,101
+97,ITEM-000097,Cタイプケ変換,quantity,,used,internal,,,,,,,,1,97,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,102
+98,ITEM-000098,ACアダプタ：TOSHIBA PA3755U,quantity,,used,internal,,,,,,,,1,98,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,103
+99,ITEM-000099,ACアダプタ：TOSHIBA PA3714U,quantity,,used,internal,,,,,,,,1,99,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,104
+100,ITEM-000100,ACアダプタ：HYT-1207000,quantity,,used,internal,,,,,,,,1,100,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,105
+101,ITEM-000101,ACアダプタ：DEL HKA65NM201,quantity,,used,internal,,,,,,,,1,101,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,106
+102,ITEM-000102,ACアダプタ：DEL HA65NS5-00,quantity,,used,internal,,,,,,,,1,102,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,107
+103,ITEM-000103,ACアダプタ：DEL LA45NN140,quantity,,used,internal,,,,,,,,1,103,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,108
+104,ITEM-000104,ACアダプタ：ELECTRONICS,quantity,,used,internal,,,,,,,,1,104,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,109
+105,ITEM-000105,ACアダプタ：Lenovo ADLX45NCC2A,quantity,,used,internal,,,,,,,,1,105,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,110
+106,ITEM-000106,ACアダプタ：A12-040N2A,quantity,,used,internal,,,,,,,,1,106,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,111
+107,ITEM-000107,ACアダプタ：Canon K30359,quantity,,used,internal,,,,,,,,1,107,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,112
+108,ITEM-000108,ACアダプタ：J651-1903420DI,quantity,,used,internal,,,,,,,,1,108,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,113
+109,ITEM-000109,ハードディスクケース,quantity,,used,internal,,,,,,,,1,109,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,114

@@ -1,7 +1,7 @@
 ﻿id,item_id,management_no,serial_number,ip_address,status,location_id,notes,is_active,created_at,updated_at,created_by,updated_by,source_excel_row
-1,1,NKC：0006,,,in_stock,1,,1,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,4
-2,1,NKC：0002,,,in_stock,1,,1,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,5
-3,30,238,,,in_stock,4,,1,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,34
-4,30,239,,,in_stock,4,,1,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,35
-5,59,NKC002,,,in_stock,1,,1,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,64
-6,62,NKC-OZAKI,,,in_stock,1,,1,2026-09-17 08:08:07,2026-09-17 08:08:07,excel_import,excel_import,67
+1,1,NKC：0006,,,in_stock,1,,1,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,4
+2,1,NKC：0002,,,in_stock,1,,1,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,5
+3,30,238,,,in_stock,4,,1,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,34
+4,30,239,,,in_stock,4,,1,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,35
+5,59,NKC002,,,in_stock,1,,1,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,64
+6,62,NKC-OZAKI,,,in_stock,1,,1,2026-09-17 08:59:11,2026-09-17 08:59:11,excel_import,excel_import,67

@@ -133,18 +133,16 @@ for it in items:
     if it['condition_raw'] and it['condition_code'] is None:
         sys.exit(f"状態に未知の値: {it['condition_raw']!r} (rows {it['source_excel_rows']})")
 
-# --- 棚卸(未確定-2: H1→棚卸期間, H2→入力日付) ---
-h1 = ws['H1'].value
+# --- 棚卸(2026-09-17 指示: 棚卸1は棚卸期間・入力日付とも空欄。棚卸2は棚卸期間=2025/12/26(H1 の日付部分)、入力日付=2026/1/8(H2)) ---
 h2 = ws['H2'].value
-g3 = ws['G3'].value
 counts = [
-    dict(id=1, count_name='2025/12/26 棚卸', base_date='2025-12-26', count_period=s(h1),
-         entry_date=h2.strftime('%Y-%m-%d') if isinstance(h2, datetime.datetime) else s(h2),
+    dict(id=1, count_name='2025/12/26 棚卸', base_date='2025-12-26', count_period=None, entry_date=None,
          start_date=None, end_date=None, status='confirmed', notes='Excel シート1 F列「棚卸数」より移行'),
-    dict(id=2, count_name='2026/1/6 棚卸', base_date='2026-01-06', count_period=s(g3),
-         entry_date=None, start_date=None, end_date=None, status='confirmed',
-         notes='Excel シート1 G列「棚卸数 2026/1/6」より移行'),
+    dict(id=2, count_name='2026/1/6 棚卸', base_date='2026-01-06', count_period='2025/12/26',
+         entry_date=h2.strftime('%Y-%m-%d') if isinstance(h2, datetime.datetime) else s(h2),
+         start_date=None, end_date=None, status='confirmed', notes='Excel シート1 G列「棚卸数 2026/1/6」より移行'),
 ]
+assert counts[1]['entry_date'] == '2026-01-08', counts[1]['entry_date']
 
 # --- 棚卸明細(R-05: 空欄は明細を作らない) ---
 details = []
