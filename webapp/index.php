@@ -18,6 +18,7 @@ $routes = [
     'counts'     => 'counts',
     'count'      => 'counts',
     'count_entry'=> 'count_entry',
+    'checkout'   => 'checkout',
     'masters'    => 'masters',
     'users'      => 'users',
     'user'       => 'users',

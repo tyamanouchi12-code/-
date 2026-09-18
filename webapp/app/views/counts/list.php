@@ -2,7 +2,7 @@
   <h1>棚卸一覧</h1>
   <a class="btn btn-primary" href="<?= h(url('count', ['action' => 'new'])) ?>">＋ 棚卸を作成</a>
 </div>
-<table class="table">
+<div class="table-wrap"><table class="table">
   <thead><tr><th>棚卸名称</th><th>基準日</th><th>棚卸期間</th><th>入力日付</th><th>開始日</th><th>終了日</th><th>状態</th><th class="num">明細数</th><th class="num">数量合計</th><th class="num">要確認</th><th>確定者</th><th></th></tr></thead>
   <tbody>
   <?php foreach ($counts as $c): ?>
@@ -23,4 +23,4 @@
   <?php endforeach; ?>
   <?php if (!$counts): ?><tr><td colspan="12" class="muted">棚卸はまだありません。</td></tr><?php endif; ?>
   </tbody>
-</table>
+</table></div>

@@ -13,6 +13,13 @@
   </div>
 </div>
 
+<div class="cards cards-4 stock-cards">
+  <div class="card"><div class="card-label">現在庫(計算)</div><div class="card-value"><?= $stock['current'] === null ? '<span class="muted">–</span>' : h($stock['current']) ?></div><div class="card-sub">棚卸数 − 持ち出し + 戻し</div></div>
+  <div class="card"><div class="card-label">最新棚卸数</div><div class="card-value"><?= $stock['latest_qty'] === null ? '<span class="muted">–</span>' : h($stock['latest_qty']) ?></div><div class="card-sub"><?= $latestCount ? h($latestCount['count_name']) : '確定済み棚卸なし' ?></div></div>
+  <div class="card"><div class="card-label">持ち出し中</div><div class="card-value"><?= h($stock['open_qty']) ?></div><div class="card-sub"><?= $stock['open'] ? h(implode(' / ', array_map('checkout_label', $stock['open']))) : 'なし' ?></div></div>
+  <div class="card"><div class="card-label">持ち出し登録</div><div class="card-sub"><a class="btn btn-sm btn-primary" href="<?= h(url('checkout', ['mode' => 'out', 'item_id' => $item['id']])) ?>">この品目を持ち出す</a> <a class="btn btn-sm" href="<?= h(url('checkout', ['mode' => 'in'])) ?>">戻す</a></div></div>
+</div>
+
 <div class="detail-grid">
   <dl>
     <dt>状態</dt><dd><?= h(condition_name($item['condition_code'])) ?: '<span class="muted">(未設定)</span>' ?></dd>
@@ -46,7 +53,7 @@
   <?php elseif (!$units): ?>
     <p class="muted">個体はまだ登録されていません。</p>
   <?php else: ?>
-  <table class="table">
+  <div class="table-wrap"><table class="table">
     <thead><tr><th>管理No</th><th>シリアル番号</th><th>IPアドレス</th><th>状態</th><th>保管場所</th><th>備考</th><th></th></tr></thead>
     <tbody>
     <?php foreach ($units as $u): ?>
@@ -61,7 +68,32 @@
       </tr>
     <?php endforeach; ?>
     </tbody>
-  </table>
+  </table></div>
+  <?php endif; ?>
+</section>
+
+<section>
+  <h2>持ち出し・戻しの記録</h2>
+  <?php if (!$checkouts): ?>
+    <p class="muted">持ち出しの記録はありません。</p>
+  <?php else: ?>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>状態</th><th>個体 / 数量</th><th>持ち出した人</th><th>持ち出し日時</th><th>戻し日時</th><th>戻し登録者</th><th>メモ</th><th>登録者</th></tr></thead>
+    <tbody>
+    <?php foreach ($checkouts as $co): ?>
+      <tr>
+        <td><?= $co['returned_at'] === null ? '<span class="badge badge-out">持ち出し中</span>' : '<span class="badge badge-on">戻し済</span>' ?></td>
+        <td><?= $co['management_no'] ? h($co['management_no']) : '×' . h($co['quantity']) ?></td>
+        <td><?= h($co['checked_out_by_name']) ?></td>
+        <td><?= h(fmt_datetime($co['checked_out_at'])) ?></td>
+        <td><?= h(fmt_datetime($co['returned_at'])) ?></td>
+        <td><?= h($co['returned_by_name']) ?></td>
+        <td><?= h($co['notes']) ?></td>
+        <td><?= h($co['created_by']) ?></td>
+      </tr>
+    <?php endforeach; ?>
+    </tbody>
+  </table></div>
   <?php endif; ?>
 </section>
 
@@ -70,7 +102,7 @@
   <?php if (!$history): ?>
     <p class="muted">棚卸履歴はありません。</p>
   <?php else: ?>
-  <table class="table">
+  <div class="table-wrap"><table class="table">
     <thead><tr><th>棚卸</th><th>基準日</th><th>状態</th><th class="num">棚卸数</th><th class="num">前回</th><th class="num">差異</th><th>確認状態</th><th>棚卸時保管場所</th><?php if ($units): ?><th>個体結果</th><?php endif; ?><th>担当者</th><th>明細備考</th></tr></thead>
     <tbody>
     <?php foreach ($history as $hrow): ?>
@@ -89,6 +121,6 @@
       </tr>
     <?php endforeach; ?>
     </tbody>
-  </table>
+  </table></div>
   <?php endif; ?>
 </section>

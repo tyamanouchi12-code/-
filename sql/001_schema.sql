@@ -4,11 +4,13 @@
 -- 文字コード: utf8mb4 (全角コロン・全角スペース・「⇔」等を含むため)
 -- 実行方法: phpMyAdmin の「SQL」タブに貼り付けて実行(データベースを選択した状態で)
 -- 実行順: 001_schema.sql → 002_seed_master.sql → 003_migrate_excel.sql
+-- (004_add_checkouts.sql は 001 実行後に持ち出し機能を追加した環境向け。新規構築では不要)
 -- =====================================================================
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS item_checkouts;
 DROP TABLE IF EXISTS inventory_count_unit_results;
 DROP TABLE IF EXISTS inventory_count_details;
 DROP TABLE IF EXISTS inventory_counts;
@@ -225,4 +227,31 @@ CREATE TABLE inventory_count_unit_results (
   KEY idx_unit_results_unit (unit_id),
   CONSTRAINT fk_unit_results_count FOREIGN KEY (count_id) REFERENCES inventory_counts (id),
   CONSTRAINT fk_unit_results_unit  FOREIGN KEY (unit_id)  REFERENCES inventory_units (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- 10. 備品の持ち出し・戻し
+-- ---------------------------------------------------------------------
+CREATE TABLE item_checkouts (
+  id                   INT           NOT NULL AUTO_INCREMENT,
+  item_id              INT           NOT NULL,                       -- 持ち出した品目
+  unit_id              INT           NULL,                           -- 個体管理品の場合の個体
+  quantity             INT           NOT NULL DEFAULT 1,             -- 持ち出し数量(個体は 1)
+  checked_out_user_id  INT           NULL,                           -- 持ち出した人(利用者。未選択可)
+  checked_out_by_name  VARCHAR(100)  NULL,                           -- 持ち出した人の名前(利用者以外も入力可)
+  checked_out_at       DATETIME      NOT NULL,                       -- 持ち出し日時
+  returned_at          DATETIME      NULL,                           -- 戻し日時(NULL = 持ち出し中)
+  returned_by_name     VARCHAR(100)  NULL,                           -- 戻しを登録した人
+  notes                VARCHAR(500)  NULL,                           -- メモ(持ち出し先など)
+  created_at           DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at           DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  created_by           VARCHAR(100)  NULL,                           -- 登録操作をした利用者
+  updated_by           VARCHAR(100)  NULL,
+  PRIMARY KEY (id),
+  KEY idx_checkouts_item (item_id, returned_at),
+  KEY idx_checkouts_unit (unit_id, returned_at),
+  KEY idx_checkouts_open (returned_at, checked_out_at),
+  CONSTRAINT fk_checkouts_item FOREIGN KEY (item_id) REFERENCES inventory_items (id),
+  CONSTRAINT fk_checkouts_unit FOREIGN KEY (unit_id) REFERENCES inventory_units (id),
+  CONSTRAINT fk_checkouts_user FOREIGN KEY (checked_out_user_id) REFERENCES users (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

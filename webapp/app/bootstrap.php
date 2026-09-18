@@ -14,6 +14,7 @@ require APP_DIR . '/lib/helpers.php';
 require APP_DIR . '/lib/csrf.php';
 require APP_DIR . '/lib/permissions.php';
 require APP_DIR . '/lib/auth.php';
+require APP_DIR . '/lib/stock.php';
 
 db_configure($config['db']);
 

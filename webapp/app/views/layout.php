@@ -15,11 +15,12 @@
     <nav class="nav">
       <a href="<?= h(url('items')) ?>" class="<?= ($view ?? '') === 'items/list' || str_starts_with($view ?? '', 'items/') || str_starts_with($view ?? '', 'units/') ? 'active' : '' ?>">品目</a>
       <a href="<?= h(url('counts')) ?>" class="<?= str_starts_with($view ?? '', 'counts/') ? 'active' : '' ?>">棚卸</a>
+      <a href="<?= h(url('checkout')) ?>" class="<?= str_starts_with($view ?? '', 'checkout/') ? 'active' : '' ?>">持ち出し</a>
       <?php if (can('master.manage')): ?><a href="<?= h(url('masters')) ?>" class="<?= str_starts_with($view ?? '', 'masters/') ? 'active' : '' ?>">マスタ</a><?php endif; ?>
       <?php if (can('user.manage')): ?><a href="<?= h(url('users')) ?>" class="<?= str_starts_with($view ?? '', 'users/') ? 'active' : '' ?>">利用者</a><?php endif; ?>
     </nav>
     <div class="userbox">
-      <span><?= h($me['display_name']) ?></span>
+      <span class="username"><?= h($me['display_name']) ?></span>
       <a href="<?= h(url('password')) ?>">パスワード変更</a>
       <form method="post" action="<?= h(url('logout')) ?>" class="inline"><?= csrf_field() ?><button type="submit" class="linklike">ログアウト</button></form>
     </div>

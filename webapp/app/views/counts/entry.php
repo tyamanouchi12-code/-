@@ -39,7 +39,7 @@
   <?= csrf_field() ?>
   <div class="sticky-actions"><button type="submit" class="btn btn-primary">入力内容を保存</button> <span class="muted">表示中の品目のみ保存されます</span></div>
 <?php endif; ?>
-<table class="table table-entry">
+<div class="table-wrap"><table class="table table-entry">
   <thead><tr><th>#</th><th>品目コード</th><th>品名</th><th>状態</th><th>保管場所</th><th class="num">前回</th><th class="num">今回</th><th class="num">差異</th><th>確認状態</th><th>明細備考</th><th>担当 / 日時</th></tr></thead>
   <tbody>
   <?php foreach ($items as $n => $it): $iid = (int)$it['id']; $isUnit = $it['management_type'] === 'unit' && $it['units']; ?>
@@ -90,7 +90,7 @@
     </tr>
   <?php endforeach; ?>
   </tbody>
-</table>
+</table></div>
 <?php if ($editable): ?>
   <div class="form-actions"><button type="submit" class="btn btn-primary">入力内容を保存</button></div>
 </form>

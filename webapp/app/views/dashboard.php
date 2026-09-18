@@ -18,7 +18,7 @@
   <?php if (!$openCounts): ?>
     <p class="muted">進行中の棚卸はありません。<a href="<?= h(url('count', ['action' => 'new'])) ?>">新しい棚卸を作成</a></p>
   <?php else: ?>
-  <table class="table">
+  <div class="table-wrap"><table class="table">
     <thead><tr><th>棚卸名称</th><th>基準日</th><th>状態</th><th></th></tr></thead>
     <tbody>
     <?php foreach ($openCounts as $c): ?>
@@ -30,13 +30,33 @@
       </tr>
     <?php endforeach; ?>
     </tbody>
-  </table>
+  </table></div>
+  <?php endif; ?>
+</section>
+
+<section>
+  <div class="page-head"><h2>持ち出し中の備品(<?= count($openCheckouts) ?> 件)</h2><a class="btn btn-sm btn-primary" href="<?= h(url('checkout')) ?>">持ち出し・戻し</a></div>
+  <?php if (!$openCheckouts): ?><p class="muted">持ち出し中の備品はありません。</p><?php else: ?>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>品名</th><th>個体 / 数量</th><th>持ち出した人</th><th>持ち出し日時</th><th>メモ</th></tr></thead>
+    <tbody>
+    <?php foreach ($openCheckouts as $co): ?>
+      <tr>
+        <td><a href="<?= h(url('item', ['id' => $co['item_id']])) ?>"><?= h($co['item_name'] ?? $co['item_code']) ?></a></td>
+        <td><?= $co['management_no'] ? h($co['management_no']) : '×' . h($co['quantity']) ?></td>
+        <td><?= h($co['checked_out_by_name']) ?></td>
+        <td><?= h(fmt_datetime($co['checked_out_at'])) ?></td>
+        <td><?= h($co['notes']) ?></td>
+      </tr>
+    <?php endforeach; ?>
+    </tbody>
+  </table></div>
   <?php endif; ?>
 </section>
 
 <section>
   <h2>最近更新された品目</h2>
-  <table class="table">
+  <div class="table-wrap"><table class="table">
     <thead><tr><th>品目コード</th><th>品名</th><th>状態</th><th>保管場所</th><th>更新日時</th><th>更新者</th></tr></thead>
     <tbody>
     <?php foreach ($recentItems as $i): ?>
@@ -50,5 +70,5 @@
       </tr>
     <?php endforeach; ?>
     </tbody>
-  </table>
+  </table></div>
 </section>

@@ -121,3 +121,54 @@
     });
   });
 })();
+
+// ---- 持ち出し画面 ----
+(function () {
+  'use strict';
+  var form = document.getElementById('checkout-form');
+  if (!form) { return; }
+  var search = document.getElementById('item-search');
+  var itemSel = document.getElementById('item-select');
+  var unitBox = document.getElementById('unit-box');
+  var unitSel = document.getElementById('unit-select');
+  var qtyBox = document.getElementById('qty-box');
+  var userSel = document.getElementById('user-select');
+  var otherBox = document.getElementById('other-box');
+  var allItemOptions = Array.prototype.slice.call(itemSel.options);
+
+  function refreshItemMode() {
+    var opt = itemSel.options[itemSel.selectedIndex];
+    var isUnit = opt && opt.getAttribute('data-type') === 'unit';
+    unitBox.hidden = !isUnit;
+    qtyBox.hidden = !!isUnit;
+    unitSel.required = !!isUnit;
+    var itemId = opt ? opt.value : '';
+    Array.prototype.forEach.call(unitSel.options, function (o) {
+      if (!o.value) { return; }
+      var show = o.getAttribute('data-item') === itemId;
+      o.hidden = !show;
+      if (!show && o.selected) { unitSel.value = ''; }
+    });
+  }
+  function filterItems() {
+    var q = (search.value || '').toLowerCase().trim();
+    var current = itemSel.value;
+    while (itemSel.options.length) { itemSel.remove(0); }
+    allItemOptions.forEach(function (o) {
+      if (!o.value || !q || o.getAttribute('data-text').indexOf(q) !== -1) { itemSel.add(o); }
+    });
+    itemSel.value = current;
+    if (itemSel.value !== current) { itemSel.selectedIndex = 0; }
+    // 絞り込み結果が 1 件ならそれを選択
+    if (q && itemSel.options.length === 2) { itemSel.selectedIndex = 1; }
+    refreshItemMode();
+  }
+  search.addEventListener('input', filterItems);
+  itemSel.addEventListener('change', refreshItemMode);
+  userSel.addEventListener('change', function () { otherBox.hidden = userSel.value !== '_other'; });
+  form.addEventListener('submit', function () {
+    // 「その他」の場合は user_id を送らない
+    if (userSel.value === '_other') { userSel.name = 'user_id_other'; }
+  });
+  refreshItemMode();
+})();

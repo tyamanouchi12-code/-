@@ -2,7 +2,7 @@
   <h1>利用者管理</h1>
   <a class="btn btn-primary" href="<?= h(url('user', ['action' => 'new'])) ?>">＋ 利用者を追加</a>
 </div>
-<table class="table">
+<div class="table-wrap"><table class="table">
   <thead><tr><th>ログインID</th><th>表示名</th><th>有効</th><th>権限</th><th>最終ログイン</th><th></th></tr></thead>
   <tbody>
   <?php foreach ($users as $u): $codes = $u['perms'] ? explode(',', $u['perms']) : []; ?>
@@ -16,5 +16,5 @@
     </tr>
   <?php endforeach; ?>
   </tbody>
-</table>
+</table></div>
 <p class="muted">権限がない操作はメニューやボタンが表示されません。利用者を削除する代わりに「無効」にしてください(登録者・更新者の記録が残ります)。</p>

@@ -77,7 +77,8 @@ if ($page === 'items') {
          . ' ORDER BY i.sort_order, i.id';
     $items = db_all($sql, $params);
     $latest = latest_confirmed_quantities();
-    render('items/list', ['title' => '品目一覧', 'items' => $items, 'f' => $f, 'latest' => $latest] + item_masters());
+    $stock = stock_summary(array_map(fn($r) => (int)$r['id'], $items));
+    render('items/list', ['title' => '品目一覧', 'items' => $items, 'f' => $f, 'latest' => $latest, 'stock' => $stock] + item_masters());
 }
 
 // ---------------------------------------------------------------- 詳細
@@ -108,13 +109,16 @@ if ($page === 'item' && $action === '') {
             $unitHistory[(int)$r['count_id']][(int)$r['unit_id']] = $r['result'];
         }
     }
+    $stock = stock_for(stock_summary([(int)$item['id']]), (int)$item['id']);
+    $checkouts = db_all('SELECT c.*, u.management_no FROM item_checkouts c LEFT JOIN inventory_units u ON u.id = c.unit_id WHERE c.item_id = ? ORDER BY c.checked_out_at DESC LIMIT 50', [$item['id']]);
+    $latestCount = latest_confirmed_count();
     $m = item_masters();
     $lookup = [
         'location' => db_val('SELECT name FROM locations WHERE id = ?', [$item['location_id']]),
         'category' => db_val('SELECT name FROM categories WHERE id = ?', [$item['category_id']]),
         'customer' => db_val('SELECT name FROM customers WHERE id = ?', [$item['customer_id']]),
     ];
-    render('items/detail', ['title' => '品目詳細', 'item' => $item, 'units' => $units, 'history' => $history, 'unitHistory' => $unitHistory, 'lookup' => $lookup] + $m);
+    render('items/detail', ['title' => '品目詳細', 'item' => $item, 'units' => $units, 'history' => $history, 'unitHistory' => $unitHistory, 'lookup' => $lookup, 'stock' => $stock, 'checkouts' => $checkouts, 'latestCount' => $latestCount] + $m);
 }
 
 // ---------------------------------------------------------------- 登録・編集フォーム

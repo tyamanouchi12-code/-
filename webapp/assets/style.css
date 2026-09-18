@@ -143,3 +143,58 @@ tr.has-diff td.diff-cell { background: #fff7e0; }
 .login-box h1 { text-align: center; }
 .login-box label { display: block; margin-bottom: 12px; font-size: 13px; }
 .login-box input { width: 100%; margin-top: 4px; }
+
+/* ===== 持ち出し・戻し ===== */
+.mode-toggle { display: flex; gap: 0; margin-bottom: 16px; border: 1px solid var(--primary); border-radius: 6px; overflow: hidden; max-width: 480px; }
+.mode-toggle a { flex: 1; text-align: center; padding: 12px; font-size: 16px; font-weight: 600; color: var(--primary); background: #fff; }
+.mode-toggle a.active { background: var(--primary); color: #fff; }
+.mode-toggle a:hover { text-decoration: none; }
+.mode-toggle .count { display: inline-block; background: #fff; color: var(--primary); border-radius: 10px; padding: 0 8px; font-size: 12px; margin-left: 4px; }
+.mode-toggle a.active .count { background: #fff; }
+.mobile-form { display: flex; flex-direction: column; gap: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; max-width: 480px; }
+.mobile-form label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.mobile-form input, .mobile-form select { font-size: 16px; padding: 10px; width: 100%; }
+.btn-lg { padding: 14px; font-size: 16px; }
+.card-list { display: flex; flex-direction: column; gap: 8px; max-width: 720px; }
+.card-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.card-row .btn { white-space: nowrap; }
+.card-title { font-weight: 600; }
+.badge-out { background: #fde68a; color: #78350f; margin: 1px 2px 1px 0; white-space: normal; }
+.checkout-cell { max-width: 220px; }
+.stock-cards .card-value { font-size: 24px; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ===== スマートフォン対応 ===== */
+@media (max-width: 800px) {
+  body { font-size: 14px; }
+  .topbar-inner { flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 8px; }
+  .brand { font-size: 15px; }
+  .nav { order: 3; flex: 0 0 100%; width: 100%; overflow-x: auto; gap: 2px; }
+  .nav a { padding: 8px 10px; white-space: nowrap; }
+  .userbox { margin-left: auto; font-size: 12px; gap: 8px; }
+  .container { padding: 12px 10px 40px; }
+  h1 { font-size: 18px; }
+  .page-head { flex-direction: column; align-items: flex-start; }
+  .cards, .cards-4 { grid-template-columns: 1fr 1fr; }
+  .card-value { font-size: 22px; }
+  .form-grid { grid-template-columns: 1fr; padding: 14px; gap: 10px; }
+  .form-grid .span2 { grid-column: span 1; }
+  .filter-bar { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
+  .filter-bar input[type=text], .filter-bar input[type=search], .filter-bar input[type=hidden] + input { grid-column: span 2; }
+  .filter-bar select, .filter-bar input[type=text], .filter-bar input[type=search] { width: 100%; }
+  .filter-bar .btn { text-align: center; }
+  .w-wide { min-width: 0; width: 100%; }
+  .detail-grid { grid-template-columns: 1fr; padding: 10px 12px; }
+  .detail-grid dl { grid-template-columns: 110px 1fr; }
+  .detail-grid .span2 { grid-column: span 1; }
+  .table { font-size: 12px; min-width: 640px; }
+  .table th, .table td { padding: 5px 6px; }
+  .table th { position: static; }
+  .mode-toggle, .mobile-form { max-width: none; }
+  .sticky-actions { position: static; }
+  input, select, textarea { font-size: 16px; }   /* iOS の自動ズーム防止 */
+}
+@media (max-width: 480px) {
+  .cards, .cards-4 { grid-template-columns: 1fr; }
+  .userbox .username { display: none; }
+}

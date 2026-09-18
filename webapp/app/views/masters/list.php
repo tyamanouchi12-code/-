@@ -16,7 +16,7 @@
 
 <section>
   <h2><?= h($def['label']) ?>一覧</h2>
-  <table class="table">
+  <div class="table-wrap"><table class="table">
     <thead><tr><th><?= $type === 'conditions' ? 'コード' : 'ID' ?></th><th>名称</th><?php if ($def['has_sort']): ?><th class="num">表示順</th><?php endif; ?><th>有効</th><th class="num">品目での使用数</th><th></th></tr></thead>
     <tbody>
     <?php foreach ($rows as $r): $k = (string)$r[$def['key']]; ?>
@@ -33,6 +33,6 @@
       </tr>
     <?php endforeach; ?>
     </tbody>
-  </table>
+  </table></div>
   <p class="muted">名称の変更は、その値を使っている全品目に反映されます。使わなくなった値は削除せず「無効」にしてください(選択肢に出なくなります)。</p>
 </section>
