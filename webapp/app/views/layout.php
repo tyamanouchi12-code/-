@@ -36,6 +36,7 @@
   <?php endif; ?>
   <?php view_include($view, get_defined_vars()); ?>
 </main>
+<footer class="footer"><?= h(APP_NAME) ?> / 版 <?= h(APP_VERSION) ?></footer>
 <script src="assets/app.js"></script>
 </body>
 </html>

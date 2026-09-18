@@ -177,6 +177,8 @@ tr.has-diff td.diff-cell { background: #fff7e0; }
 .table-inner th { position: static; background: #f3f6fb; }
 .cat-detail > td { background: #fafbfd; }
 
+.footer { text-align: center; color: var(--muted); font-size: 11px; padding: 12px; }
+
 /* ===== スマートフォン対応 ===== */
 @media (max-width: 800px) {
   body { font-size: 14px; }

@@ -27,7 +27,7 @@ $routes = [
 
 if (!isset($routes[$page])) {
     http_response_code(404);
-    render('error', ['title' => 'ページが見つかりません', 'message' => '指定されたページは存在しません。']);
+    render('error', ['title' => 'ページが見つかりません', 'message' => '指定されたページ(' . $page . ')は存在しません。サーバー上の index.php が古い可能性があります(画面下部の版を確認してください)。']);
     exit;
 }
 
