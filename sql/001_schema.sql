@@ -18,25 +18,37 @@ DROP TABLE IF EXISTS customers;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS locations;
 DROP TABLE IF EXISTS conditions;
+DROP TABLE IF EXISTS user_permissions;
 DROP TABLE IF EXISTS users;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ---------------------------------------------------------------------
--- 0. 利用者(ログイン)
+-- 0. 利用者(ログイン)と権限
 -- ---------------------------------------------------------------------
 CREATE TABLE users (
   id             INT          NOT NULL AUTO_INCREMENT,
   login_id       VARCHAR(50)  NOT NULL,                         -- ログインID
   display_name   VARCHAR(100) NOT NULL,                         -- 表示名(登録者・更新者に記録する名前)
   password_hash  VARCHAR(255) NOT NULL,                         -- PHP password_hash() の値
-  role           VARCHAR(20)  NOT NULL DEFAULT 'user',          -- 'admin'(利用者管理可) / 'user'
   is_active      TINYINT(1)   NOT NULL DEFAULT 1,
   last_login_at  DATETIME     NULL,
   created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY uq_users_login_id (login_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 利用者ごとの権限(権限コードは webapp/app/lib/permissions.php で定義)
+--   count.confirm   棚卸の確定・確定解除
+--   item.deactivate 品目・個体の無効化/再有効化
+--   master.manage   マスタ管理(保管場所・カテゴリ・客先・状態)
+--   user.manage     利用者管理(追加・権限設定・パスワード再設定)
+CREATE TABLE user_permissions (
+  user_id          INT          NOT NULL,
+  permission_code  VARCHAR(50)  NOT NULL,
+  PRIMARY KEY (user_id, permission_code),
+  CONSTRAINT fk_user_permissions_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -107,8 +119,8 @@ CREATE TABLE inventory_items (
   sort_order        INT           NOT NULL DEFAULT 0,                -- 表示順
   created_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  created_by        VARCHAR(50)   NULL,
-  updated_by        VARCHAR(50)   NULL,
+  created_by        VARCHAR(100)  NULL,
+  updated_by        VARCHAR(100)  NULL,
   source_excel_rows VARCHAR(50)   NULL,                              -- 移行元Excel行(例 '4;5')。検証用
   PRIMARY KEY (id),
   UNIQUE KEY uq_items_code (item_code),
@@ -137,8 +149,8 @@ CREATE TABLE inventory_units (
   is_active         TINYINT(1)    NOT NULL DEFAULT 1,
   created_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  created_by        VARCHAR(50)   NULL,
-  updated_by        VARCHAR(50)   NULL,
+  created_by        VARCHAR(100)  NULL,
+  updated_by        VARCHAR(100)  NULL,
   source_excel_row  INT           NULL,
   PRIMARY KEY (id),
   KEY idx_units_item (item_id),
@@ -160,9 +172,9 @@ CREATE TABLE inventory_counts (
   end_date      DATE          NULL,                                  -- 棚卸終了日
   status        VARCHAR(20)   NOT NULL DEFAULT 'preparing',          -- 'preparing'(準備中) / 'in_progress'(棚卸中) / 'confirmed'(確定済)
   notes         TEXT          NULL,
-  created_by    VARCHAR(50)   NULL,
+  created_by    VARCHAR(100)  NULL,
   created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  confirmed_by  VARCHAR(50)   NULL,
+  confirmed_by  VARCHAR(100)  NULL,
   confirmed_at  DATETIME      NULL,
   PRIMARY KEY (id),
   KEY idx_counts_base_date (base_date)
@@ -178,13 +190,13 @@ CREATE TABLE inventory_count_details (
   count_quantity        INT           NULL,                          -- 棚卸数量(未入力は NULL)
   confirm_status        VARCHAR(20)   NOT NULL DEFAULT 'unconfirmed',-- 'unconfirmed'(未確認) / 'confirmed'(確認済) / 'needs_check'(要確認)
   location_id_at_count  INT           NULL,                          -- 棚卸時保管場所
-  counted_by            VARCHAR(50)   NULL,                          -- 棚卸担当者
+  counted_by            VARCHAR(100)  NULL,                          -- 棚卸担当者
   counted_at            DATETIME      NULL,                          -- 棚卸日時
   notes                 TEXT          NULL,                          -- 明細備考(その棚卸だけのメモ)
   created_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  created_by            VARCHAR(50)   NULL,
-  updated_by            VARCHAR(50)   NULL,
+  created_by            VARCHAR(100)  NULL,
+  updated_by            VARCHAR(100)  NULL,
   source_excel_rows     VARCHAR(50)   NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_details_count_item (count_id, item_id),
@@ -205,8 +217,8 @@ CREATE TABLE inventory_count_unit_results (
   notes             TEXT          NULL,
   created_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  created_by        VARCHAR(50)   NULL,
-  updated_by        VARCHAR(50)   NULL,
+  created_by        VARCHAR(100)  NULL,
+  updated_by        VARCHAR(100)  NULL,
   source_excel_row  INT           NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_unit_results_count_unit (count_id, unit_id),

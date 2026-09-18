@@ -1,0 +1,8 @@
+# app/ 配下は直接アクセス禁止(DB接続情報を守る)
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>
