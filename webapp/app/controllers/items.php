@@ -154,6 +154,9 @@ if ($page === 'item' && $action === 'save' && $_SERVER['REQUEST_METHOD'] === 'PO
     if ($v['item_name'] === null) {
         $errors[] = '品名は必須です。';
     }
+    if ($v['category_id'] === null) {
+        $errors[] = 'カテゴリは必須です。';
+    }
     if (!isset(management_type_options()[$v['management_type']])) {
         $errors[] = '管理方法が不正です。';
     }

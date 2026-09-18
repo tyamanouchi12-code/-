@@ -28,7 +28,7 @@
       <td><?= $i['item_name'] === null ? '<span class="muted">(品名なし)</span>' : h($i['item_name']) ?><?= (int)$i['is_active'] ? '' : ' <span class="badge badge-off">無効</span>' ?></td>
       <td><?= h(condition_name($i['condition_code'])) ?></td>
       <td><?= h(management_type_label($i['management_type'])) ?><?php if ($i['management_type'] === 'unit'): ?><br><small><?= h($i['unit_nos'] ?: '(個体未登録)') ?></small><?php endif; ?></td>
-      <td><?= h($i['category_name']) ?></td>
+      <td><?= $i['category_name'] === null ? '<span class="badge badge-warn">未設定</span>' : h($i['category_name']) ?></td>
       <td><?= h($i['location_name']) ?></td>
       <?php $s = stock_for($stock, (int)$i['id']); ?>
       <td class="num"><?= $s['latest_qty'] === null ? '<span class="muted">–</span>' : h($s['latest_qty']) ?></td>

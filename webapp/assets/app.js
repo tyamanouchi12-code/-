@@ -1,4 +1,4 @@
-// NKC 棚卸システム 画面補助スクリプト
+// NKC 在庫管理システム 画面補助スクリプト
 (function () {
   'use strict';
 
@@ -62,7 +62,7 @@
   var prevOfItem = {};
   entryTable.querySelectorAll('.qty-auto').forEach(function (span) {
     var row = span.closest('tr');
-    var prevCell = row.children[5];
+    var prevCell = row.querySelector('.qty-auto').closest('td').previousElementSibling;
     prevOfItem[span.getAttribute('data-item')] = prevCell ? prevCell.textContent.trim() : '';
   });
   function recalcUnits(itemId) {
@@ -90,6 +90,15 @@
   }
   entryTable.querySelectorAll('input[type=radio][data-unit-of]').forEach(function (r) {
     r.addEventListener('change', function () { recalcUnits(r.getAttribute('data-unit-of')); });
+  });
+
+  // カテゴリ別集計の内訳の開閉
+  document.querySelectorAll('.cat-toggle').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var d = document.querySelector('.cat-detail[data-cat="' + b.getAttribute('data-cat') + '"]');
+      d.hidden = !d.hidden;
+      b.textContent = d.hidden ? '内訳' : '閉じる';
+    });
   });
 
   // 表内の絞り込み(テキスト / 未入力のみ / 差異ありのみ)

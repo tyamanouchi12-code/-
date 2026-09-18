@@ -125,15 +125,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
     if (input_int('location', $_GET) !== null) {
         $back['location'] = input_int('location', $_GET);
     }
+    if (input_int('category', $_GET) !== null) {
+        $back['category'] = input_int('category', $_GET);
+    }
     redirect('count_entry', $back);
 }
 
 // ---------------------------------------------------------------- 表示
 $locFilter = input_int('location', $_GET);
-$showLoc = input_str('loc', $_GET);
+$catFilter = input_int('category', $_GET);
+
+// カテゴリ別集計(絞り込み前の全品目で計算)
+$byCat = [];
+foreach ($items as $it) {
+    $key = $it['category_id'] === null ? 0 : (int)$it['category_id'];
+    if (!isset($byCat[$key])) {
+        $byCat[$key] = ['category_id' => $key, 'name' => $it['category_name'] ?? '(カテゴリ未設定)', 'item_count' => 0, 'entered' => 0,
+                        'total' => 0, 'prev_total' => 0, 'prev_count' => 0, 'diff' => 0, 'needs_check' => 0, 'items' => []];
+    }
+    $g = &$byCat[$key];
+    $prev = $prevQty[(int)$it['id']] ?? null;
+    $g['item_count']++;
+    if ($it['count_quantity'] !== null) {
+        $g['entered']++;
+        $g['total'] += (int)$it['count_quantity'];
+    }
+    if ($prev !== null) {
+        $g['prev_total'] += (int)$prev;
+        $g['prev_count']++;
+    }
+    if ($prev !== null && $it['count_quantity'] !== null) {
+        $g['diff'] += (int)$it['count_quantity'] - (int)$prev;
+    }
+    if ($it['confirm_status'] === 'needs_check') {
+        $g['needs_check']++;
+    }
+    $g['items'][] = ['id' => (int)$it['id'], 'item_code' => $it['item_code'], 'item_name' => $it['item_name'], 'condition_code' => $it['condition_code'],
+                     'qty' => $it['count_quantity'], 'prev' => $prev, 'confirm_status' => $it['confirm_status'], 'location_name' => $it['location_name']];
+    unset($g);
+}
+uasort($byCat, function ($a, $b) {
+    if ($a['category_id'] === 0) { return 1; }
+    if ($b['category_id'] === 0) { return -1; }
+    return strcmp($a['name'], $b['name']);
+});
+$catOrder = [];
+foreach (db_all('SELECT id FROM categories ORDER BY sort_order, id') as $r) {
+    $catOrder[(int)$r['id']] = count($catOrder);
+}
+uasort($byCat, fn($a, $b) => ($catOrder[$a['category_id']] ?? PHP_INT_MAX) <=> ($catOrder[$b['category_id']] ?? PHP_INT_MAX));
+
 if ($locFilter !== null) {
     $items = array_values(array_filter($items, fn($it) => (int)$it['location_id'] === $locFilter || ($locFilter === 0 && $it['location_id'] === null)));
 }
+if ($catFilter !== null) {
+    $items = array_values(array_filter($items, fn($it) => (int)$it['category_id'] === $catFilter || ($catFilter === 0 && $it['category_id'] === null)));
+}
+$categories = db_all('SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order, id');
 $summary = ['entered' => 0, 'total' => 0, 'needs_check' => 0, 'diff' => 0];
 foreach ($items as &$it) {
     $iid = (int)$it['id'];
@@ -156,5 +204,5 @@ unset($it);
 render('counts/entry', [
     'title' => ($editable ? '棚卸入力' : '棚卸結果') . ' ' . $count['count_name'],
     'count' => $count, 'editable' => $editable, 'items' => $items, 'prevCount' => $prevCount, 'prevUnit' => $prevUnit,
-    'locations' => $locations, 'locFilter' => $locFilter, 'summary' => $summary,
+    'locations' => $locations, 'locFilter' => $locFilter, 'categories' => $categories, 'catFilter' => $catFilter, 'byCat' => $byCat, 'summary' => $summary,
 ]);

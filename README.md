@@ -1,4 +1,4 @@
-# NKC 棚卸 Web システム
+# NKC 在庫管理 Web システム
 
 現行の Excel 棚卸表「（仮）NKC棚卸.xlsx」の**シート1**を Web システム化するプロジェクトです(他のシートは対象外)。
 
@@ -14,6 +14,7 @@
 | `docs/07_XServer導入手順.md` | XServer への設置手順(DB作成 → SQL実行 → config.php 編集 → FFFTP → setup.php) |
 | `docs/screenshots/` | 画面イメージ |
 | `sql/004_add_checkouts.sql` | 既存環境に持ち出しテーブルを追加する SQL |
+| `sql/005_optional_apply_categories.sql` | (任意)移行品目にカテゴリ初期案を一括設定する SQL |
 | `sql/001_schema.sql` 〜 `003_migrate_excel.sql` | DB作成・マスタ投入・Excel移行データ投入のSQL(phpMyAdmin で順に実行) |
 | `docs/06_アプリ画面構成案.md` | Webアプリの技術方針・画面一覧・確認事項 |
 | `docs/04_テーブル定義.md` | B案のテーブル定義とDDL案(MySQL 8.0 仮定) |

@@ -1,4 +1,4 @@
-/* NKC 棚卸システム 共通スタイル(PC 用) */
+/* NKC 在庫管理システム 共通スタイル(PC 用) */
 :root {
   --bg: #f4f6f9; --panel: #fff; --text: #1f2933; --muted: #6b7280; --line: #d9dee5;
   --primary: #1f6feb; --primary-dark: #185ac2; --success: #1a7f4b; --danger: #c0392b; --warn: #b7791f;
@@ -163,6 +163,19 @@ tr.has-diff td.diff-cell { background: #fff7e0; }
 .checkout-cell { max-width: 220px; }
 .stock-cards .card-value { font-size: 24px; }
 .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* カテゴリ別集計 */
+.cat-summary details { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; }
+.cat-summary summary { cursor: pointer; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; list-style: none; }
+.cat-summary summary::-webkit-details-marker { display: none; }
+.cat-summary summary::before { content: '▶'; font-size: 11px; color: var(--muted); }
+.cat-summary details[open] summary::before { content: '▼'; }
+.cat-summary summary h2 { margin: 0; border: none; padding: 0; }
+.cat-summary .table-wrap { margin-top: 8px; }
+.table-catsum tfoot th { background: var(--head); }
+.table-inner { margin: 4px 0 4px 16px; width: calc(100% - 16px); font-size: 12px; }
+.table-inner th { position: static; background: #f3f6fb; }
+.cat-detail > td { background: #fafbfd; }
 
 /* ===== スマートフォン対応 ===== */
 @media (max-width: 800px) {

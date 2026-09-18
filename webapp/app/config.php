@@ -16,7 +16,7 @@ return [
         'charset' => 'utf8mb4',
     ],
     'app' => [
-        'name'         => 'NKC 棚卸システム',
+        'name'         => 'NKC 在庫管理システム',
         'session_name' => 'nkc_inventory_sid',
         'timezone'     => 'Asia/Tokyo',
         // ログインしないまま操作できる時間(秒)。0 なら制限なし

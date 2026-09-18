@@ -22,8 +22,59 @@
   <div class="card"><div class="card-label">前回との差異あり</div><div class="card-value small"><?= h($summary['diff']) ?></div><div class="card-sub">前回: <?= $prevCount ? h($prevCount['count_name']) . '(' . h(fmt_date($prevCount['base_date'])) . ')' : 'なし' ?></div></div>
 </div>
 
+<section class="cat-summary">
+  <details <?= input_str('cats', $_GET) === '1' ? 'open' : '' ?>>
+    <summary><h2>カテゴリ別集計(<?= count($byCat) ?> カテゴリ)</h2><span class="muted">クリックで開閉。各カテゴリの「内訳」で品名ごとの数量を確認できます</span></summary>
+    <div class="table-wrap"><table class="table table-catsum">
+      <thead><tr><th>カテゴリ</th><th class="num">品目数</th><th class="num">入力済み</th><th class="num">今回合計</th><th class="num">前回合計</th><th class="num">差異</th><th class="num">要確認</th><th></th></tr></thead>
+      <tbody>
+      <?php $gt = ['item_count' => 0, 'entered' => 0, 'total' => 0, 'prev_total' => 0, 'diff' => 0, 'needs_check' => 0]; ?>
+      <?php foreach ($byCat as $g): foreach ($gt as $k => $v) { $gt[$k] += $g[$k]; } ?>
+        <tr class="cat-row" data-cat="<?= h($g['category_id']) ?>">
+          <td><?= $g['category_id'] === 0 ? '<span class="badge badge-warn">' . h($g['name']) . '</span>' : h($g['name']) ?></td>
+          <td class="num"><?= h($g['item_count']) ?></td>
+          <td class="num"><?= h($g['entered']) ?><?= $g['entered'] < $g['item_count'] ? ' <small class="muted">/ ' . h($g['item_count']) . '</small>' : '' ?></td>
+          <td class="num"><strong><?= h($g['total']) ?></strong></td>
+          <td class="num"><?= $g['prev_count'] ? h($g['prev_total']) : '<span class="muted">–</span>' ?></td>
+          <td class="num <?= $g['diff'] > 0 ? 'diff-plus' : ($g['diff'] < 0 ? 'diff-minus' : '') ?>"><?= $g['prev_count'] ? h(($g['diff'] > 0 ? '+' : '') . $g['diff']) : '' ?></td>
+          <td class="num"><?= $g['needs_check'] ? '<span class="badge badge-warn">' . h($g['needs_check']) . '</span>' : '0' ?></td>
+          <td class="nowrap"><button type="button" class="btn btn-sm cat-toggle" data-cat="<?= h($g['category_id']) ?>">内訳</button> <a class="btn btn-sm btn-ghost" href="<?= h(url('count_entry', ['id' => $count['id'], 'category' => $g['category_id'], 'cats' => 1])) ?>">この分類だけ表示</a></td>
+        </tr>
+        <tr class="cat-detail" data-cat="<?= h($g['category_id']) ?>" hidden>
+          <td colspan="8">
+            <table class="table table-inner">
+              <thead><tr><th>品目コード</th><th>品名</th><th>状態</th><th>保管場所</th><th class="num">今回</th><th class="num">前回</th><th class="num">差異</th><th>確認状態</th></tr></thead>
+              <tbody>
+              <?php foreach ($g['items'] as $gi): $d = ($gi['qty'] === null || $gi['prev'] === null) ? null : (int)$gi['qty'] - (int)$gi['prev']; ?>
+                <tr>
+                  <td class="nowrap"><a href="<?= h(url('item', ['id' => $gi['id']])) ?>" target="_blank"><?= h($gi['item_code']) ?></a></td>
+                  <td><?= $gi['item_name'] === null ? '<span class="muted">(品名なし)</span>' : h($gi['item_name']) ?></td>
+                  <td><?= h(condition_name($gi['condition_code'])) ?></td>
+                  <td><?= h($gi['location_name']) ?></td>
+                  <td class="num"><?= $gi['qty'] === null ? '<span class="muted">–</span>' : '<strong>' . h($gi['qty']) . '</strong>' ?></td>
+                  <td class="num"><?= $gi['prev'] === null ? '<span class="muted">–</span>' : h($gi['prev']) ?></td>
+                  <td class="num <?= $d === null ? '' : ($d > 0 ? 'diff-plus' : ($d < 0 ? 'diff-minus' : '')) ?>"><?= $d === null ? '' : h(($d > 0 ? '+' : '') . $d) ?></td>
+                  <td><?= $gi['confirm_status'] ? h(confirm_status_label($gi['confirm_status'])) : '' ?></td>
+                </tr>
+              <?php endforeach; ?>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      <?php endforeach; ?>
+      </tbody>
+      <tfoot><tr><th>合計</th><th class="num"><?= h($gt['item_count']) ?></th><th class="num"><?= h($gt['entered']) ?></th><th class="num"><?= h($gt['total']) ?></th><th class="num"><?= h($gt['prev_total']) ?></th><th class="num <?= $gt['diff'] > 0 ? 'diff-plus' : ($gt['diff'] < 0 ? 'diff-minus' : '') ?>"><?= h(($gt['diff'] > 0 ? '+' : '') . $gt['diff']) ?></th><th class="num"><?= h($gt['needs_check']) ?></th><th></th></tr></tfoot>
+    </table></div>
+  </details>
+</section>
+
 <form method="get" class="filter-bar">
   <input type="hidden" name="page" value="count_entry"><input type="hidden" name="id" value="<?= h($count['id']) ?>">
+  <select name="category" onchange="this.form.submit()">
+    <option value="">カテゴリ: すべて</option>
+    <?php foreach ($categories as $c): ?><option value="<?= h($c['id']) ?>" <?= $catFilter === (int)$c['id'] ? 'selected' : '' ?>><?= h($c['name']) ?></option><?php endforeach; ?>
+    <option value="0" <?= $catFilter === 0 ? 'selected' : '' ?>>(カテゴリ未設定)</option>
+  </select>
   <select name="location" onchange="this.form.submit()">
     <option value="">保管場所: すべて</option>
     <?php foreach ($locations as $l): ?><option value="<?= h($l['id']) ?>" <?= $locFilter === (int)$l['id'] ? 'selected' : '' ?>><?= h($l['name']) ?></option><?php endforeach; ?>
@@ -35,12 +86,12 @@
 </form>
 
 <?php if ($editable): ?>
-<form method="post" action="<?= h(url('count_entry', ['action' => 'save', 'id' => $count['id']] + ($locFilter !== null ? ['location' => $locFilter] : []))) ?>" id="entry-form" data-dirty-check>
+<form method="post" action="<?= h(url('count_entry', ['action' => 'save', 'id' => $count['id']] + ($locFilter !== null ? ['location' => $locFilter] : []) + ($catFilter !== null ? ['category' => $catFilter] : []))) ?>" id="entry-form" data-dirty-check>
   <?= csrf_field() ?>
   <div class="sticky-actions"><button type="submit" class="btn btn-primary">入力内容を保存</button> <span class="muted">表示中の品目のみ保存されます</span></div>
 <?php endif; ?>
 <div class="table-wrap"><table class="table table-entry">
-  <thead><tr><th>#</th><th>品目コード</th><th>品名</th><th>状態</th><th>保管場所</th><th class="num">前回</th><th class="num">今回</th><th class="num">差異</th><th>確認状態</th><th>明細備考</th><th>担当 / 日時</th></tr></thead>
+  <thead><tr><th>#</th><th>品目コード</th><th>品名</th><th>カテゴリ</th><th>状態</th><th>保管場所</th><th class="num">前回</th><th class="num">今回</th><th class="num">差異</th><th>確認状態</th><th>明細備考</th><th>担当 / 日時</th></tr></thead>
   <tbody>
   <?php foreach ($items as $n => $it): $iid = (int)$it['id']; $isUnit = $it['management_type'] === 'unit' && $it['units']; ?>
     <tr class="entry-row <?= $it['count_quantity'] === null ? 'unentered' : '' ?> <?= $it['diff'] ? 'has-diff' : '' ?> <?= (int)$it['is_active'] ? '' : 'row-inactive' ?>" data-text="<?= h(mb_strtolower(($it['item_name'] ?? '') . ' ' . $it['item_code'] . ' ' . implode(' ', array_column($it['units'], 'management_no')))) ?>">
@@ -65,6 +116,7 @@
           </div>
         <?php endif; ?>
       </td>
+      <td><?= $it['category_name'] === null ? '<span class="badge badge-warn">未設定</span>' : h($it['category_name']) ?></td>
       <td><?= h(condition_name($it['condition_code'])) ?></td>
       <td><?= h($it['location_name']) ?></td>
       <td class="num"><?= $it['prev_quantity'] === null ? '<span class="muted">–</span>' : h($it['prev_quantity']) ?></td>
