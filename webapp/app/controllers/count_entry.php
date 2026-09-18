@@ -42,23 +42,39 @@ foreach (db_all('SELECT u.*, r.result FROM inventory_units u
 }
 $locations = db_all('SELECT * FROM locations WHERE is_active = 1 ORDER BY sort_order, id');
 
-// ---------------------------------------------------------------- 保存
+// ---------------------------------------------------------------- 保存(全体 / 行単位)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
+    $isAjax = ($_POST['ajax'] ?? '') === '1';
+    $saveItem = input_int('save_item');          // 行ごとの「確定」ボタン: この品目だけ保存
+    $respond = function (bool $ok, string $message, array $extra = []) use ($isAjax, $count) {
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode(['ok' => $ok, 'message' => $message] + $extra, JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        flash_set($ok ? 'success' : 'error', $message);
+        $back = ['id' => $count['id']];
+        foreach (['location', 'category'] as $k) {
+            if (input_int($k, $_GET) !== null) {
+                $back[$k] = input_int($k, $_GET);
+            }
+        }
+        redirect('count_entry', $back);
+    };
     if (!$editable) {
-        flash_set('error', 'この棚卸は「棚卸中」ではないため入力できません。');
-        redirect('count_entry', ['id' => $count['id']]);
+        $respond(false, 'この棚卸は「棚卸中」ではないため入力できません。');
     }
     $qtyIn = $_POST['qty'] ?? [];
-    $statusIn = $_POST['confirm_status'] ?? [];
     $notesIn = $_POST['dnotes'] ?? [];
     $unitIn = $_POST['unit'] ?? [];
-    $touchedIn = $_POST['touched'] ?? [];   // 画面に表示されていた品目ID(絞り込み表示中は一部のみ)
+    $touchedIn = $_POST['touched'] ?? [];   // 画面に表示されていた品目ID
     $pdo = db();
     $pdo->beginTransaction();
     $saved = 0;
+    $savedRows = [];
     foreach ($items as $it) {
         $iid = (int)$it['id'];
-        if (!isset($touchedIn[$iid])) {
+        if ($saveItem !== null ? $iid !== $saveItem : !isset($touchedIn[$iid])) {
             continue;
         }
         $isUnit = $it['management_type'] === 'unit' && !empty($unitsByItem[$iid]);
@@ -92,43 +108,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
             if ($raw !== '') {
                 if (!preg_match('/^\d{1,9}$/', $raw)) {
                     $pdo->rollBack();
-                    flash_set('error', '棚卸数は 0 以上の整数で入力してください(' . ($it['item_code']) . ' ' . $it['item_name'] . ')。');
-                    redirect('count_entry', ['id' => $count['id']]);
+                    $respond(false, '棚卸数は 0 以上の整数で入力してください(' . $it['item_code'] . ' ' . $it['item_name'] . ')。');
                 }
                 $qty = (int)$raw;
             }
         }
-        $cs = $statusIn[$iid] ?? null;
-        if (!is_string($cs) || !isset(confirm_status_options()[$cs])) {
-            $cs = $qty === null ? 'unconfirmed' : 'confirmed';
-        }
+        $cs = $qty === null ? 'unconfirmed' : 'confirmed';   // 確認状態は自動(数量が入っていれば確認済み)
         $dn = isset($notesIn[$iid]) && is_string($notesIn[$iid]) ? trim($notesIn[$iid]) : '';
         $dn = $dn === '' ? null : mb_substr($dn, 0, 5000);
 
+        $changed = false;
         if ($it['detail_id']) {
             $changed = ((string)$it['count_quantity'] !== (string)$qty) || $it['confirm_status'] !== $cs || (string)$it['detail_notes'] !== (string)$dn;
             db_exec('UPDATE inventory_count_details SET count_quantity = ?, confirm_status = ?, notes = ?, location_id_at_count = ?,
                         counted_by = CASE WHEN ? THEN ? ELSE counted_by END, counted_at = CASE WHEN ? THEN NOW() ELSE counted_at END, updated_by = ?
                      WHERE id = ?',
                 [$qty, $cs, $dn, $it['location_id'], $changed ? 1 : 0, actor_name(), $changed ? 1 : 0, actor_name(), $it['detail_id']]);
-            $saved += $changed ? 1 : 0;
-        } elseif ($qty !== null || $cs !== 'unconfirmed' || $dn !== null) {
+        } elseif ($qty !== null || $dn !== null) {
             db_exec('INSERT INTO inventory_count_details (count_id, item_id, count_quantity, confirm_status, location_id_at_count, counted_by, counted_at, notes, created_by, updated_by)
                      VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)',
                 [$count['id'], $iid, $qty, $cs, $it['location_id'], actor_name(), $dn, actor_name(), actor_name()]);
-            $saved++;
+            $changed = true;
         }
+        $saved += $changed ? 1 : 0;
+        $d = db_row('SELECT count_quantity, counted_by, counted_at FROM inventory_count_details WHERE count_id = ? AND item_id = ?', [$count['id'], $iid]);
+        $savedRows[$iid] = ['qty' => $d ? $d['count_quantity'] : null, 'counted_by' => $d['counted_by'] ?? null,
+                            'counted_at' => $d && $d['counted_at'] ? fmt_datetime($d['counted_at']) : null];
     }
     $pdo->commit();
-    flash_set('success', '保存しました(変更 ' . $saved . ' 件)。');
-    $back = ['id' => $count['id']];
-    if (input_int('location', $_GET) !== null) {
-        $back['location'] = input_int('location', $_GET);
+    if ($saveItem !== null && !isset($savedRows[$saveItem])) {
+        $respond(false, '対象の品目が見つかりません。');
     }
-    if (input_int('category', $_GET) !== null) {
-        $back['category'] = input_int('category', $_GET);
-    }
-    redirect('count_entry', $back);
+    $respond(true, $saveItem !== null ? '保存しました。' : '保存しました(変更 ' . $saved . ' 件)。', ['rows' => $savedRows]);
 }
 
 // ---------------------------------------------------------------- 表示

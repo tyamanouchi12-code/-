@@ -6,7 +6,7 @@
     <div class="card-label">最後に確定した棚卸</div>
     <?php if ($lastConfirmed): ?>
       <div class="card-value small"><a href="<?= h(url('count_entry', ['id' => $lastConfirmed['id']])) ?>"><?= h($lastConfirmed['count_name']) ?></a></div>
-      <div class="card-sub">基準日 <?= h(fmt_date($lastConfirmed['base_date'])) ?> / 明細 <?= h($lastSummary['detail_count']) ?> 件 / 合計 <?= h($lastSummary['total_qty']) ?> / 要確認 <?= h($lastSummary['needs_check']) ?> 件</div>
+      <div class="card-sub">基準日 <?= h(fmt_date($lastConfirmed['base_date'])) ?> / 明細 <?= h($lastSummary['detail_count']) ?> 件 / 合計 <?= h($lastSummary['total_qty']) ?></div>
     <?php else: ?>
       <div class="card-sub">なし</div>
     <?php endif; ?>

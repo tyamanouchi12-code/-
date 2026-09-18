@@ -103,7 +103,7 @@
     <p class="muted">棚卸履歴はありません。</p>
   <?php else: ?>
   <div class="table-wrap"><table class="table">
-    <thead><tr><th>棚卸</th><th>基準日</th><th>状態</th><th class="num">棚卸数</th><th class="num">前回</th><th class="num">差異</th><th>確認状態</th><th>棚卸時保管場所</th><?php if ($units): ?><th>個体結果</th><?php endif; ?><th>担当者</th><th>明細備考</th></tr></thead>
+    <thead><tr><th>棚卸</th><th>基準日</th><th>状態</th><th class="num">棚卸数</th><th class="num">前回</th><th class="num">差異</th><th>棚卸時保管場所</th><?php if ($units): ?><th>個体結果</th><?php endif; ?><th>担当者</th><th>明細備考</th></tr></thead>
     <tbody>
     <?php foreach ($history as $hrow): ?>
       <tr>
@@ -113,7 +113,6 @@
         <td class="num"><?= $hrow['count_quantity'] === null ? '<span class="muted">–</span>' : h($hrow['count_quantity']) ?></td>
         <td class="num"><?= $hrow['prev_quantity'] === null ? '<span class="muted">–</span>' : h($hrow['prev_quantity']) ?></td>
         <td class="num <?= $hrow['diff'] === null ? '' : ($hrow['diff'] > 0 ? 'diff-plus' : ($hrow['diff'] < 0 ? 'diff-minus' : '')) ?>"><?= $hrow['diff'] === null ? '' : h(($hrow['diff'] > 0 ? '+' : '') . $hrow['diff']) ?></td>
-        <td><?= h(confirm_status_label($hrow['confirm_status'])) ?></td>
         <td><?= h($hrow['location_name']) ?></td>
         <?php if ($units): ?><td><?php $parts = []; foreach ($units as $u) { if (isset($unitHistory[(int)$hrow['count_id']][(int)$u['id']])) { $parts[] = h($u['management_no']) . ':' . h(unit_result_label($unitHistory[(int)$hrow['count_id']][(int)$u['id']])); } } echo implode('<br>', $parts); ?></td><?php endif; ?>
         <td><?= h($hrow['counted_by']) ?></td>
