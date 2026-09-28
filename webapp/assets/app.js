@@ -26,17 +26,15 @@
   });
 })();
 
-// ---- 棚卸入力画面 ----
+// ---- 棚卸入力画面(内訳ごとに入力、品目合計は自動) ----
 (function () {
   'use strict';
   var entryTable = document.getElementById('entry-table');
   if (!entryTable) { return; }
   var form = document.getElementById('entry-form');
   var rows = Array.prototype.slice.call(entryTable.querySelectorAll('tr.entry-row'));
+  var heads = Array.prototype.slice.call(entryTable.querySelectorAll('tr.item-head'));
 
-  function rowOf(itemId) { return entryTable.querySelector('tr.entry-row[data-item="' + itemId + '"]'); }
-
-  // 差異の再計算(今回の値が変わったとき)
   function setDiff(row, qty) {
     var cell = row.querySelector('.diff-cell');
     var prev = row.getAttribute('data-prev');
@@ -53,47 +51,70 @@
     var st = row.querySelector('.save-state');
     if (st) { st.textContent = '未保存'; st.classList.remove('saved'); st.classList.add('dirty'); }
   }
+  function setEntered(row, on) {
+    row.classList.toggle('unentered', !on); row.classList.toggle('entered', on);
+  }
 
-  // 数量入力
   entryTable.querySelectorAll('.qty-input').forEach(function (inp) {
     inp.addEventListener('input', function () {
       var v = inp.value.replace(/[０-９]/g, function (s) { return String.fromCharCode(s.charCodeAt(0) - 0xFEE0); });
       inp.value = v;
       var row = inp.closest('tr');
       markDirty(row);
-      if (v === '') { row.classList.add('unentered'); row.classList.remove('entered'); setDiff(row, null); return; }
+      if (v === '') { setEntered(row, false); setDiff(row, null); return; }
       if (!/^\d+$/.test(v)) { return; }
-      row.classList.remove('unentered'); row.classList.add('entered');
+      setEntered(row, true);
       setDiff(row, parseInt(v, 10));
     });
   });
-  entryTable.querySelectorAll('input[name^="dnotes"]').forEach(function (inp) {
+  entryTable.querySelectorAll('input[name^="unotes"]').forEach(function (inp) {
     inp.addEventListener('input', function () { markDirty(inp.closest('tr')); });
   });
-
-  // 個体の有/無 → 数量を自動集計
-  function recalcUnits(itemId) {
-    var row = rowOf(itemId);
-    var radios = row.querySelectorAll('input[type=radio][data-unit-of="' + itemId + '"]:checked');
-    var present = 0, any = false;
-    radios.forEach(function (r) { if (r.value !== 'unchecked') { any = true; } if (r.value === 'present') { present++; } });
-    var span = row.querySelector('.qty-auto');
-    markDirty(row);
-    if (!any) { span.textContent = '–'; row.classList.add('unentered'); row.classList.remove('entered'); setDiff(row, null); return; }
-    span.textContent = String(present);
-    row.classList.remove('unentered'); row.classList.add('entered');
-    setDiff(row, present);
-  }
   entryTable.querySelectorAll('input[type=radio][data-unit-of]').forEach(function (r) {
-    r.addEventListener('change', function () { recalcUnits(r.getAttribute('data-unit-of')); });
+    r.addEventListener('change', function () {
+      var row = r.closest('tr');
+      markDirty(row);
+      if (r.value === 'unchecked') { setEntered(row, false); setDiff(row, null); }
+      else { setEntered(row, true); setDiff(row, r.value === 'present' ? 1 : 0); }
+    });
   });
 
-  // ---- 行ごとの「確定」(その行だけ保存。画面は再読み込みしない) ----
+  // 保存済みの数量(集計用)
+  var savedQty = {};
+  rows.forEach(function (row) {
+    var inp = row.querySelector('.qty-input'), strong = row.querySelector('td[data-label="今回"] strong');
+    var v = '';
+    if (inp) { v = inp.value; }
+    else if (row.querySelector('.unit-radios')) { var c = row.querySelector('.unit-radios input:checked'); v = c ? (c.value === 'present' ? '1' : (c.value === 'absent' ? '0' : '')) : ''; }
+    else if (strong) { v = strong.textContent; }
+    else { var b = row.querySelector('.badge-unit-present'); v = b ? '1' : (row.querySelector('.badge-unit-absent') ? '0' : ''); }
+    savedQty[row.getAttribute('data-unit')] = /^\d+$/.test(v) ? parseInt(v, 10) : null;
+  });
+  function refreshTotals() {
+    var entered = 0, total = 0, byItem = {};
+    rows.forEach(function (row) {
+      var item = row.getAttribute('data-item');
+      byItem[item] = byItem[item] || { entered: 0, total: 0 };
+      var q = savedQty[row.getAttribute('data-unit')];
+      if (q !== null && q !== undefined) { entered++; total += q; byItem[item].entered++; byItem[item].total += q; }
+    });
+    var se = document.getElementById('sum-entered'), st = document.getElementById('sum-total');
+    if (se) { se.textContent = entered; }
+    if (st) { st.textContent = total; }
+    Object.keys(byItem).forEach(function (item) {
+      var e = document.querySelector('.cat-entered[data-cat="' + item + '"]'), t = document.querySelector('.cat-total[data-cat="' + item + '"]');
+      var h = entryTable.querySelector('.item-total[data-item="' + item + '"]');
+      if (e) { e.textContent = byItem[item].entered; }
+      if (t) { t.textContent = byItem[item].total; }
+      if (h) { h.textContent = byItem[item].entered ? byItem[item].total : '–'; }
+    });
+  }
+
   function collectRow(row) {
     var data = new FormData();
     data.append('_token', form.querySelector('input[name=_token]').value);
     data.append('ajax', '1');
-    data.append('save_item', row.getAttribute('data-item'));
+    data.append('save_unit', row.getAttribute('data-unit'));
     row.querySelectorAll('input, select').forEach(function (el) {
       if (!el.name) { return; }
       if (el.type === 'radio' && !el.checked) { return; }
@@ -101,37 +122,13 @@
     });
     return data;
   }
-  function refreshTotals() {
-    var entered = 0, total = 0, byCat = {};
-    rows.forEach(function (row) {
-      var cat = row.getAttribute('data-cat');
-      byCat[cat] = byCat[cat] || { entered: 0, total: 0 };
-      var q = savedQty[row.getAttribute('data-item')];
-      if (q !== null && q !== undefined) { entered++; total += q; byCat[cat].entered++; byCat[cat].total += q; }
-    });
-    var se = document.getElementById('sum-entered'), st = document.getElementById('sum-total');
-    if (se) { se.textContent = entered; }
-    if (st) { st.textContent = total; }
-    Object.keys(byCat).forEach(function (cat) {
-      var e = document.querySelector('.cat-entered[data-cat="' + cat + '"]'), t = document.querySelector('.cat-total[data-cat="' + cat + '"]');
-      if (e) { e.textContent = byCat[cat].entered; }
-      if (t) { t.textContent = byCat[cat].total; }
-    });
-  }
-  var savedQty = {};
-  rows.forEach(function (row) {
-    var inp = row.querySelector('.qty-input'), auto = row.querySelector('.qty-auto'), strong = row.querySelector('td[data-label="今回"] strong');
-    var v = inp ? inp.value : (auto ? auto.textContent : (strong ? strong.textContent : ''));
-    savedQty[row.getAttribute('data-item')] = /^\d+$/.test(v) ? parseInt(v, 10) : null;
-  });
-
   if (form) {
     entryTable.querySelectorAll('.row-save').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
-        if (!window.fetch || !window.FormData) { return; }   // 古いブラウザは通常送信
+        if (!window.fetch || !window.FormData) { return; }
         e.preventDefault();
         var row = btn.closest('tr');
-        var itemId = row.getAttribute('data-item');
+        var uid = row.getAttribute('data-unit');
         var st = row.querySelector('.save-state');
         btn.disabled = true; st.textContent = '保存中…'; st.classList.remove('saved', 'dirty', 'error');
         fetch(form.getAttribute('action'), { method: 'POST', body: collectRow(row), credentials: 'same-origin' })
@@ -139,17 +136,16 @@
           .then(function (res) {
             btn.disabled = false;
             if (!res.ok) { st.textContent = '✕ ' + res.message; st.classList.add('error'); window.alert(res.message); return; }
-            var info = res.rows && res.rows[itemId];
+            var info = res.units && res.units[uid];
             st.textContent = '✓ 保存済'; st.classList.add('saved');
             if (info) {
-              savedQty[itemId] = (info.qty === null || info.qty === undefined) ? null : parseInt(info.qty, 10);
+              savedQty[uid] = (info.qty === null || info.qty === undefined) ? null : parseInt(info.qty, 10);
               var cc = row.querySelector('.counted-cell');
               cc.innerHTML = '';
-              if (info.counted_by) { cc.appendChild(document.createTextNode(info.counted_by)); }
-              if (info.counted_at) { cc.appendChild(document.createElement('br')); cc.appendChild(document.createTextNode(info.counted_at)); }
+              if (info.by) { cc.appendChild(document.createTextNode(info.by)); }
+              if (info.at) { cc.appendChild(document.createElement('br')); cc.appendChild(document.createTextNode(info.at)); }
             }
             refreshTotals();
-            // 次の行の数量欄へ
             var idx = rows.indexOf(row);
             for (var j = idx + 1; j < rows.length; j++) {
               if (rows[j].style.display !== 'none') { var n = rows[j].querySelector('.qty-input'); if (n) { n.focus(); n.select(); } break; }
@@ -158,15 +154,14 @@
           .catch(function () { btn.disabled = false; st.textContent = '✕ 通信エラー'; st.classList.add('error'); });
       });
     });
-    // Enter キー: その行を確定
-    entryTable.querySelectorAll('.qty-input, input[name^="dnotes"]').forEach(function (inp) {
+    entryTable.querySelectorAll('.qty-input, input[name^="unotes"]').forEach(function (inp) {
       inp.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') { e.preventDefault(); inp.closest('tr').querySelector('.row-save').click(); }
       });
     });
   }
 
-  // ---- カテゴリ別集計: 行クリックでそのカテゴリだけ表示 / 全件表示 ----
+  // ---- 品目別集計: 行クリックでその品目だけ表示 / 全件表示 ----
   var catRows = document.querySelectorAll('#cat-table tr.cat-row');
   var scope = document.getElementById('entry-scope');
   var selectedCat = null;
@@ -174,7 +169,7 @@
     var q = (document.getElementById('quick-filter').value || '').toLowerCase().trim();
     var onlyUn = document.getElementById('only-unentered').checked;
     var onlyDiff = document.getElementById('only-diff').checked;
-    var shown = 0;
+    var shown = 0, visibleItems = {};
     rows.forEach(function (row) {
       var show = true;
       if (selectedCat !== null && row.getAttribute('data-cat') !== selectedCat) { show = false; }
@@ -182,12 +177,13 @@
       if (onlyUn && !row.classList.contains('unentered')) { show = false; }
       if (onlyDiff && !row.classList.contains('has-diff')) { show = false; }
       row.style.display = show ? '' : 'none';
-      if (show) { shown++; }
+      if (show) { shown++; visibleItems[row.getAttribute('data-item')] = true; }
     });
+    heads.forEach(function (h) { h.style.display = visibleItems[h.getAttribute('data-item')] ? '' : 'none'; });
     if (scope) {
       var name = '';
       catRows.forEach(function (r) { if (r.getAttribute('data-cat') === selectedCat) { name = r.querySelector('.cat-link').textContent.trim(); } });
-      scope.textContent = (selectedCat === null ? '(全件' : '(カテゴリ「' + name + '」') + ' ' + shown + ' 件)';
+      scope.textContent = (selectedCat === null ? '(全件' : '(品目「' + name + '」') + ' ' + shown + ' 件)';
     }
   }
   catRows.forEach(function (r) {
@@ -216,7 +212,6 @@
     var el = document.getElementById(id);
     if (el) { el.addEventListener(id === 'quick-filter' ? 'input' : 'change', applyFilter); }
   });
-  // サーバー側でカテゴリ絞り込み済みなら、その行を選択状態にしておく
   catRows.forEach(function (r) { if (r.classList.contains('selected')) { selectedCat = r.getAttribute('data-cat'); } });
   if (scope && selectedCat !== null) { applyFilter(); }
 })();
@@ -228,57 +223,59 @@
   if (!form) { return; }
   var search = document.getElementById('item-search');
   var itemSel = document.getElementById('item-select');
-  var unitBox = document.getElementById('unit-box');
   var unitSel = document.getElementById('unit-select');
   var qtyBox = document.getElementById('qty-box');
   var userSel = document.getElementById('user-select');
   var otherBox = document.getElementById('other-box');
-  var allItemOptions = Array.prototype.slice.call(itemSel.options);
+  var allUnitOptions = Array.prototype.slice.call(unitSel.options).filter(function (o) { return o.value; });
+  var placeholder = unitSel.options[0];
 
-  function refreshItemMode() {
-    var opt = itemSel.options[itemSel.selectedIndex];
-    var isUnit = opt && opt.getAttribute('data-type') === 'unit';
-    unitBox.hidden = !isUnit;
-    qtyBox.hidden = !!isUnit;
-    unitSel.required = !!isUnit;
-    var itemId = opt ? opt.value : '';
-    Array.prototype.forEach.call(unitSel.options, function (o) {
-      if (!o.value) { return; }
-      var show = o.getAttribute('data-item') === itemId;
-      o.hidden = !show;
-      if (!show && o.selected) { unitSel.value = ''; }
-    });
-  }
-  function filterItems() {
+  function rebuildUnits() {
+    var itemId = itemSel.value;
     var q = (search.value || '').toLowerCase().trim();
-    var current = itemSel.value;
-    while (itemSel.options.length) { itemSel.remove(0); }
-    allItemOptions.forEach(function (o) {
-      if (!o.value || !q || o.getAttribute('data-text').indexOf(q) !== -1) { itemSel.add(o); }
+    var current = unitSel.value;
+    while (unitSel.options.length) { unitSel.remove(0); }
+    placeholder.textContent = itemId ? '選択してください' : '先に品目を選択してください';
+    unitSel.add(placeholder);
+    var n = 0, last = null;
+    allUnitOptions.forEach(function (o) {
+      if (itemId && o.getAttribute('data-item') !== itemId) { return; }
+      if (!itemId && !q) { return; }
+      if (q && o.getAttribute('data-text').indexOf(q) === -1) { return; }
+      unitSel.add(o); n++; last = o;
     });
-    itemSel.value = current;
-    if (itemSel.value !== current) { itemSel.selectedIndex = 0; }
-    if (q && itemSel.options.length === 2) { itemSel.selectedIndex = 1; }
-    refreshItemMode();
+    unitSel.value = current;
+    if (unitSel.value !== current) { unitSel.selectedIndex = 0; }
+    if (n === 1 && !last.disabled) { unitSel.value = last.value; }
+    refreshQty();
   }
-  search.addEventListener('input', filterItems);
-  itemSel.addEventListener('change', refreshItemMode);
+  function refreshQty() {
+    var opt = unitSel.options[unitSel.selectedIndex];
+    var isUnit = opt && opt.getAttribute('data-unit') === '1';
+    qtyBox.hidden = !!isUnit;
+    // 内訳を選んだら品目も合わせる(検索から選んだ場合)
+    if (opt && opt.value && itemSel.value !== opt.getAttribute('data-item')) { itemSel.value = opt.getAttribute('data-item'); }
+  }
+  search.addEventListener('input', function () { if (search.value.trim()) { itemSel.value = ''; } rebuildUnits(); });
+  itemSel.addEventListener('change', function () { search.value = ''; rebuildUnits(); });
+  unitSel.addEventListener('change', refreshQty);
   userSel.addEventListener('change', function () { otherBox.hidden = userSel.value !== '_other'; });
   form.addEventListener('submit', function () {
     if (userSel.value === '_other') { userSel.name = 'user_id_other'; }
   });
-  refreshItemMode();
+  rebuildUnits();
 })();
 
-// ---- 品目フォーム: 個体情報の入力欄 ----
+// ---- 品目フォーム: 内訳の入力欄 ----
 (function () {
   'use strict';
   var section = document.getElementById('unit-section');
   if (!section) { return; }
-  var typeSel = document.querySelector('select[name=management_type]');
   var table = document.getElementById('unit-table').querySelector('tbody');
   var tpl = document.getElementById('unit-row-template');
   var addBtn = document.getElementById('unit-add');
+  var catSel = document.getElementById('category-select');
+  var nameInp = document.getElementById('item-name');
   function nextIndex() {
     var max = -1;
     table.querySelectorAll('input[name^="units["]').forEach(function (i) {
@@ -293,15 +290,41 @@
     table.appendChild(row);
     row.querySelector('input[type=text]').focus();
   }
-  function toggle() {
-    var isUnit = typeSel.value === 'unit';
-    section.hidden = !isUnit;
-    if (isUnit && table.querySelectorAll('tr').length === 0) { addRow(); }
-  }
-  typeSel.addEventListener('change', toggle);
   addBtn.addEventListener('click', addRow);
   table.addEventListener('click', function (e) {
     if (e.target.classList.contains('unit-remove')) { e.target.closest('tr').remove(); }
   });
-  toggle();
+  if (table.querySelectorAll('tr').length === 0) { addRow(); }
+  // カテゴリを選んだら品目名を自動で入れる(未入力のとき、または前のカテゴリ名と同じとき)
+  if (catSel && nameInp) {
+    var prevCatName = catSel.options[catSel.selectedIndex] ? catSel.options[catSel.selectedIndex].textContent.trim() : '';
+    catSel.addEventListener('change', function () {
+      var name = catSel.options[catSel.selectedIndex].textContent.trim();
+      if (!nameInp.value.trim() || nameInp.value.trim() === prevCatName) { nameInp.value = catSel.value ? name : ''; }
+      prevCatName = name;
+    });
+  }
+})();
+
+// ---- 品目一覧: 内訳の開閉 ----
+(function () {
+  'use strict';
+  var toggles = document.querySelectorAll('.unit-toggle');
+  if (!toggles.length) { return; }
+  function setOpen(btn, open) {
+    var rows = document.querySelector('tr.unit-rows[data-item="' + btn.getAttribute('data-item') + '"]');
+    rows.hidden = !open;
+    btn.textContent = open ? '▼' : '▶';
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  toggles.forEach(function (btn) {
+    btn.addEventListener('click', function () { setOpen(btn, btn.getAttribute('aria-expanded') !== 'true'); });
+  });
+  var all = document.getElementById('toggle-all-units');
+  if (all) {
+    all.addEventListener('click', function () {
+      var anyClosed = Array.prototype.some.call(toggles, function (b) { return b.getAttribute('aria-expanded') !== 'true'; });
+      toggles.forEach(function (b) { setOpen(b, anyClosed); });
+    });
+  }
 })();

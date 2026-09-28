@@ -80,9 +80,11 @@ if ($page === 'count' && $action === 'status' && $_SERVER['REQUEST_METHOD'] === 
         flash_set('success', '棚卸を開始しました。');
     } elseif ($to === 'confirmed' && $from === 'in_progress') {
         require_perm('count.confirm');
-        $unentered = (int)db_val('SELECT COUNT(*) FROM inventory_items i WHERE i.is_active = 1 AND NOT EXISTS (SELECT 1 FROM inventory_count_details d WHERE d.count_id = ? AND d.item_id = i.id AND d.count_quantity IS NOT NULL)', [$count['id']]);
+        $unentered = (int)db_val("SELECT COUNT(*) FROM inventory_units u JOIN inventory_items i ON i.id = u.item_id
+                                   WHERE u.is_active = 1 AND u.status <> 'disposed' AND i.is_active = 1
+                                     AND NOT EXISTS (SELECT 1 FROM inventory_count_unit_results r WHERE r.count_id = ? AND r.unit_id = u.id AND r.counted_quantity IS NOT NULL)", [$count['id']]);
         db_exec("UPDATE inventory_counts SET status = 'confirmed', end_date = COALESCE(end_date, CURDATE()), confirmed_by = ?, confirmed_at = NOW() WHERE id = ?", [actor_name(), $count['id']]);
-        flash_set('success', '棚卸を確定しました。' . ($unentered > 0 ? "(数量未入力の品目が {$unentered} 件あります。未入力の品目は履歴に含まれません)" : ''));
+        flash_set('success', '棚卸を確定しました。' . ($unentered > 0 ? "(数量未入力の内訳が {$unentered} 件あります。未入力の内訳は履歴に含まれません)" : ''));
     } elseif ($to === 'in_progress' && $from === 'confirmed') {
         require_perm('count.confirm');
         db_exec("UPDATE inventory_counts SET status = 'in_progress', confirmed_by = NULL, confirmed_at = NULL WHERE id = ?", [$count['id']]);

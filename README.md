@@ -15,6 +15,7 @@
 | `docs/screenshots/` | 画面イメージ |
 | `sql/004_add_checkouts.sql` | 既存環境に持ち出しテーブルを追加する SQL |
 | `sql/005_optional_apply_categories.sql` | (任意)移行品目にカテゴリ初期案を一括設定する SQL |
+| `sql/006_restructure_items_by_category.sql` | 品目=カテゴリ、内訳=実物の種類・個体 への変換 SQL(既存環境は必須) |
 | `sql/001_schema.sql` 〜 `003_migrate_excel.sql` | DB作成・マスタ投入・Excel移行データ投入のSQL(phpMyAdmin で順に実行) |
 | `docs/06_アプリ画面構成案.md` | Webアプリの技術方針・画面一覧・確認事項 |
 | `docs/04_テーブル定義.md` | B案のテーブル定義とDDL案(MySQL 8.0 仮定) |
@@ -28,6 +29,7 @@
 
 - 素の PHP 8.1+(フレームワーク・Composer なし)、PDO(MySQL)、HTML/CSS/JavaScript。PC 用。
 - `webapp/index.php?page=...` がすべての画面の入口。`webapp/app/` は `.htaccess` で直接アクセス禁止。
+- データ構造(2026-09-28〜): 品目 = カテゴリ(12件)、その下の「内訳」= 実物の種類・個体(Excelの各行)。管理Noのある内訳は1台の個体、無い内訳は数量で数える。棚卸は内訳ごとに入力し品目合計は自動。
 - 持ち出し・戻し(`?page=checkout`)はスマホ向けレイアウト。現在庫 = 最新確定棚卸数 − 持ち出し + 戻し(`webapp/app/lib/stock.php`)。
 - 権限は利用者ごとに設定(`webapp/app/lib/permissions.php`): 棚卸の確定 / 品目・個体の無効化 / マスタ管理 / 利用者管理。
 - 接続情報はサーバー上の `webapp/app/config.local.php`(リポジトリ対象外)に書く。`config.php` は初期値。

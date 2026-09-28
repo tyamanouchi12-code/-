@@ -185,6 +185,14 @@ tr.entry-row.entered .item-name { }
 .table-units input[type=text], .table-units select { width: 100%; min-width: 90px; }
 .table-units td { padding: 4px; }
 
+tr.item-head td { background: #eef2f8; font-size: 13px; }
+tr.unit-rows > td { background: #fafbfd; padding: 6px 8px 10px 40px; }
+.table-inner.table-cards { margin: 0; width: 100%; }
+.unit-radios { display: inline-flex; gap: 8px; white-space: nowrap; }
+.unit-radios label { display: inline-flex; align-items: center; gap: 2px; }
+.form-grid.wide { max-width: none; }
+.w-name { min-width: 180px; }
+
 /* ===== スマートフォン対応 ===== */
 @media (max-width: 800px) {
   body { font-size: 14px; }
@@ -220,6 +228,7 @@ tr.entry-row.entered .item-name { }
   .table-cards { min-width: 0; border: none; background: transparent; }
   .table-cards thead { display: none; }
   .table-cards, .table-cards tbody, .table-cards tr, .table-cards td { display: block; width: 100%; }
+  .table-cards tr[hidden], .table-cards td[hidden] { display: none; }
   .table-cards tr { border: 1px solid var(--line); border-radius: 6px; margin-bottom: 8px; padding: 6px 10px; background: var(--panel); }
   .table-cards tr.row-inactive { background: #fafafa; }
   .table-cards td { display: flex; align-items: flex-start; gap: 8px; border: none; padding: 3px 0; text-align: left; }
@@ -232,6 +241,9 @@ tr.entry-row.entered .item-name { }
   .table-cards .w-notes { width: 100%; }
   .table-cards .notes-cell, .table-cards .checkout-cell { max-width: none; }
   .table-cards .unit-list { width: 100%; }
+  tr.unit-rows > td { padding: 4px 0 0; }
+  .table-cards tr.item-head { background: #eef2f8; }
+  .table-cards tr.unit-rows { border: none; padding: 0; background: transparent; }
   .table-catsum { min-width: 0; }
   .table-catsum th:nth-child(5), .table-catsum td:nth-child(5) { display: none; }   /* 前回合計は省略 */
   .cards-3 { grid-template-columns: 1fr; }

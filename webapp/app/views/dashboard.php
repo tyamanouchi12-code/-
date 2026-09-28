@@ -1,7 +1,7 @@
 <h1>ダッシュボード</h1>
 <div class="cards">
-  <div class="card"><div class="card-label">有効な品目</div><div class="card-value"><?= h($stats['items_active']) ?></div><div class="card-sub">無効: <?= h($stats['items_inactive']) ?></div></div>
-  <div class="card"><div class="card-label">個体(管理No あり)</div><div class="card-value"><?= h($stats['units_active']) ?></div></div>
+  <div class="card"><div class="card-label">品目(カテゴリ)</div><div class="card-value"><?= h($stats['items_active']) ?></div><div class="card-sub">無効: <?= h($stats['items_inactive']) ?></div></div>
+  <div class="card"><div class="card-label">内訳(実物の種類・個体)</div><div class="card-value"><?= h($stats['units_active']) ?></div></div>
   <div class="card">
     <div class="card-label">最後に確定した棚卸</div>
     <?php if ($lastConfirmed): ?>
@@ -38,11 +38,12 @@
   <div class="page-head"><h2>持ち出し中の備品(<?= count($openCheckouts) ?> 件)</h2><a class="btn btn-sm btn-primary" href="<?= h(url('checkout')) ?>">持ち出し・戻し</a></div>
   <?php if (!$openCheckouts): ?><p class="muted">持ち出し中の備品はありません。</p><?php else: ?>
   <div class="table-wrap"><table class="table">
-    <thead><tr><th>品名</th><th>個体 / 数量</th><th>持ち出した人</th><th>持ち出し日時</th><th>メモ</th></tr></thead>
+    <thead><tr><th>内訳(品名)</th><th>品目</th><th>管理No / 数量</th><th>持ち出した人</th><th>持ち出し日時</th><th>メモ</th></tr></thead>
     <tbody>
     <?php foreach ($openCheckouts as $co): ?>
       <tr>
-        <td><a href="<?= h(url('item', ['id' => $co['item_id']])) ?>"><?= h($co['item_name'] ?? $co['item_code']) ?></a></td>
+        <td><?= h($co['unit_name'] ?? '') ?></td>
+        <td><a href="<?= h(url('item', ['id' => $co['item_id']])) ?>"><?= h($item_name_tmp = $co['item_name'] ?? $co['item_code']) ?></a></td>
         <td><?= $co['management_no'] ? h($co['management_no']) : '×' . h($co['quantity']) ?></td>
         <td><?= h($co['checked_out_by_name']) ?></td>
         <td><?= h(fmt_datetime($co['checked_out_at'])) ?></td>
@@ -55,18 +56,19 @@
 </section>
 
 <section>
-  <h2>最近更新された品目</h2>
+  <h2>最近更新された内訳</h2>
   <div class="table-wrap"><table class="table">
-    <thead><tr><th>品目コード</th><th>品名</th><th>状態</th><th>保管場所</th><th>更新日時</th><th>更新者</th></tr></thead>
+    <thead><tr><th>内訳名(品名)</th><th>品目</th><th>状態</th><th>管理No</th><th>保管場所</th><th>更新日時</th><th>更新者</th></tr></thead>
     <tbody>
-    <?php foreach ($recentItems as $i): ?>
+    <?php foreach ($recentUnits as $u): ?>
       <tr>
-        <td class="nowrap"><a href="<?= h(url('item', ['id' => $i['id']])) ?>"><?= h($i['item_code']) ?></a></td>
-        <td><?= $i['item_name'] === null ? '<span class="muted">(品名なし)</span>' : h($i['item_name']) ?></td>
-        <td><?= h(condition_name($i['condition_code'])) ?></td>
-        <td><?= h($i['location_name']) ?></td>
-        <td><?= h(fmt_datetime($i['updated_at'])) ?></td>
-        <td><?= h($i['updated_by']) ?></td>
+        <td><?= $u['name'] === null ? '<span class="muted">(内訳名なし)</span>' : h($u['name']) ?></td>
+        <td><a href="<?= h(url('item', ['id' => $u['item_id']])) ?>"><?= h($u['item_name']) ?></a></td>
+        <td><?= h(condition_name($u['condition_code'])) ?></td>
+        <td><?= h($u['management_no']) ?></td>
+        <td><?= h($u['location_name']) ?></td>
+        <td><?= h(fmt_datetime($u['updated_at'])) ?></td>
+        <td><?= h($u['updated_by']) ?></td>
       </tr>
     <?php endforeach; ?>
     </tbody>

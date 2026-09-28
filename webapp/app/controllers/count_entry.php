@@ -1,5 +1,5 @@
 <?php
-// 棚卸入力 / 結果表示
+// 棚卸入力 / 結果表示(内訳ごとに数量を入力し、品目の合計は自動集計)
 
 $count = db_row('SELECT * FROM inventory_counts WHERE id = ?', [(int)input_int('id', $_GET) ?: (int)input_int('id')]);
 if (!$count) {
@@ -13,39 +13,69 @@ $editable = $count['status'] === 'in_progress';
 $prevCount = db_row("SELECT id, count_name, base_date FROM inventory_counts
                      WHERE status = 'confirmed' AND id <> ? AND (base_date < ? OR (base_date = ? AND id < ?))
                      ORDER BY base_date DESC, id DESC LIMIT 1", [$count['id'], $count['base_date'], $count['base_date'], $count['id']]);
-$prevQty = [];
-$prevUnit = [];
+$prevItemQty = [];
+$prevUnitQty = [];
 if ($prevCount) {
     foreach (db_all('SELECT item_id, count_quantity FROM inventory_count_details WHERE count_id = ?', [$prevCount['id']]) as $r) {
-        $prevQty[(int)$r['item_id']] = $r['count_quantity'];
+        $prevItemQty[(int)$r['item_id']] = $r['count_quantity'];
     }
-    foreach (db_all('SELECT unit_id, result FROM inventory_count_unit_results WHERE count_id = ?', [$prevCount['id']]) as $r) {
-        $prevUnit[(int)$r['unit_id']] = $r['result'];
+    foreach (db_all('SELECT unit_id, counted_quantity FROM inventory_count_unit_results WHERE count_id = ?', [$prevCount['id']]) as $r) {
+        $prevUnitQty[(int)$r['unit_id']] = $r['counted_quantity'];
     }
 }
 
-// 対象品目: 有効な品目すべて + この棚卸に明細がある無効品目(履歴表示のため)
-$items = db_all('SELECT i.*, l.name AS location_name, c.name AS category_name,
-                        d.id AS detail_id, d.count_quantity, d.confirm_status, d.notes AS detail_notes, d.counted_by, d.counted_at, d.location_id_at_count
+// 対象品目: 有効な品目 + この棚卸に明細がある品目
+$items = db_all('SELECT i.*, l.name AS location_name, d.id AS detail_id, d.count_quantity, d.counted_by, d.counted_at
                  FROM inventory_items i
                  LEFT JOIN locations l ON l.id = i.location_id
-                 LEFT JOIN categories c ON c.id = i.category_id
                  LEFT JOIN inventory_count_details d ON d.count_id = ? AND d.item_id = i.id
                  WHERE i.is_active = 1 OR d.id IS NOT NULL
                  ORDER BY i.sort_order, i.id', [$count['id']]);
-$unitsByItem = [];
-foreach (db_all('SELECT u.*, r.result FROM inventory_units u
-                 LEFT JOIN inventory_count_unit_results r ON r.count_id = ? AND r.unit_id = u.id
-                 WHERE (u.is_active = 1 AND u.status <> \'disposed\') OR r.id IS NOT NULL
-                 ORDER BY u.id', [$count['id']]) as $u) {
-    $unitsByItem[(int)$u['item_id']][] = $u;
+$itemById = [];
+foreach ($items as $it) {
+    $itemById[(int)$it['id']] = $it;
 }
-$locations = db_all('SELECT * FROM locations WHERE is_active = 1 ORDER BY sort_order, id');
+// 対象内訳: 有効な内訳 + この棚卸に結果がある内訳
+$unitsByItem = [];
+$unitById = [];
+foreach (db_all("SELECT u.*, COALESCE(l2.name, l1.name) AS location_name, COALESCE(u.location_id, i.location_id) AS eff_location_id,
+                        r.id AS result_id, r.counted_quantity, r.result, r.notes AS result_notes, r.updated_by AS result_by, r.updated_at AS result_at
+                 FROM inventory_units u
+                 JOIN inventory_items i ON i.id = u.item_id
+                 LEFT JOIN locations l1 ON l1.id = i.location_id LEFT JOIN locations l2 ON l2.id = u.location_id
+                 LEFT JOIN inventory_count_unit_results r ON r.count_id = ? AND r.unit_id = u.id
+                 WHERE (u.is_active = 1 AND u.status <> 'disposed') OR r.id IS NOT NULL
+                 ORDER BY u.sort_order, u.id", [$count['id']]) as $u) {
+    if (!isset($itemById[(int)$u['item_id']])) {
+        continue;
+    }
+    $unitsByItem[(int)$u['item_id']][] = $u;
+    $unitById[(int)$u['id']] = $u;
+}
 
-// ---------------------------------------------------------------- 保存(全体 / 行単位)
+/** 品目の明細を内訳結果から再集計して保存 */
+function recompute_item_detail(int $countId, int $itemId, ?int $locationId): array
+{
+    $agg = db_row('SELECT SUM(r.counted_quantity IS NOT NULL) AS n, SUM(COALESCE(r.counted_quantity,0)) AS total
+                   FROM inventory_count_unit_results r JOIN inventory_units u ON u.id = r.unit_id WHERE r.count_id = ? AND u.item_id = ?', [$countId, $itemId]);
+    $qty = (int)($agg['n'] ?? 0) > 0 ? (int)$agg['total'] : null;
+    $cs = $qty === null ? 'unconfirmed' : 'confirmed';
+    $existing = db_row('SELECT id, count_quantity FROM inventory_count_details WHERE count_id = ? AND item_id = ?', [$countId, $itemId]);
+    if ($existing) {
+        $changed = (string)$existing['count_quantity'] !== (string)$qty;
+        db_exec('UPDATE inventory_count_details SET count_quantity = ?, confirm_status = ?, location_id_at_count = ?, updated_by = ?,
+                    counted_by = ?, counted_at = NOW() WHERE id = ?', [$qty, $cs, $locationId, actor_name(), actor_name(), $existing['id']]);
+    } else {
+        db_exec('INSERT INTO inventory_count_details (count_id, item_id, count_quantity, confirm_status, location_id_at_count, counted_by, counted_at, created_by, updated_by)
+                 VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)', [$countId, $itemId, $qty, $cs, $locationId, actor_name(), actor_name(), actor_name()]);
+    }
+    return ['qty' => $qty, 'counted_by' => actor_name(), 'counted_at' => fmt_datetime(now_str())];
+}
+
+// ---------------------------------------------------------------- 保存(全体 / 内訳1行)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
     $isAjax = ($_POST['ajax'] ?? '') === '1';
-    $saveItem = input_int('save_item');          // 行ごとの「確定」ボタン: この品目だけ保存
+    $saveUnit = input_int('save_unit');
     $respond = function (bool $ok, string $message, array $extra = []) use ($isAjax, $count) {
         if ($isAjax) {
             header('Content-Type: application/json; charset=UTF-8');
@@ -54,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
         }
         flash_set($ok ? 'success' : 'error', $message);
         $back = ['id' => $count['id']];
-        foreach (['location', 'category'] as $k) {
+        foreach (['location', 'item'] as $k) {
             if (input_int($k, $_GET) !== null) {
                 $back[$k] = input_int($k, $_GET);
             }
@@ -65,155 +95,129 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
         $respond(false, 'この棚卸は「棚卸中」ではないため入力できません。');
     }
     $qtyIn = $_POST['qty'] ?? [];
-    $notesIn = $_POST['dnotes'] ?? [];
     $unitIn = $_POST['unit'] ?? [];
-    $touchedIn = $_POST['touched'] ?? [];   // 画面に表示されていた品目ID
+    $notesIn = $_POST['unotes'] ?? [];
+    $touchedIn = $_POST['touched'] ?? [];
     $pdo = db();
     $pdo->beginTransaction();
     $saved = 0;
-    $savedRows = [];
-    foreach ($items as $it) {
-        $iid = (int)$it['id'];
-        if ($saveItem !== null ? $iid !== $saveItem : !isset($touchedIn[$iid])) {
+    $savedUnits = [];
+    $affectedItems = [];
+    foreach ($unitById as $uid => $u) {
+        if ($saveUnit !== null ? $uid !== $saveUnit : !isset($touchedIn[$uid])) {
             continue;
         }
-        $isUnit = $it['management_type'] === 'unit' && !empty($unitsByItem[$iid]);
-        $qty = null;
-        if ($isUnit) {
-            $present = 0;
-            $anyChecked = false;
-            foreach ($unitsByItem[$iid] as $u) {
-                $uid = (int)$u['id'];
-                $res = $unitIn[$uid] ?? 'unchecked';
-                if (!in_array($res, ['unchecked', 'present', 'absent'], true)) {
-                    $res = 'unchecked';
-                }
-                if ($res !== 'unchecked') {
-                    $anyChecked = true;
-                }
-                if ($res === 'present') {
-                    $present++;
-                }
-                $exists = db_val('SELECT id FROM inventory_count_unit_results WHERE count_id = ? AND unit_id = ?', [$count['id'], $uid]);
-                if ($exists) {
-                    db_exec('UPDATE inventory_count_unit_results SET result = ?, updated_by = ? WHERE id = ?', [$res, actor_name(), $exists]);
-                } elseif ($res !== 'unchecked') {
-                    db_exec('INSERT INTO inventory_count_unit_results (count_id, unit_id, result, created_by, updated_by) VALUES (?, ?, ?, ?, ?)',
-                        [$count['id'], $uid, $res, actor_name(), actor_name()]);
-                }
+        if ($u['management_no'] !== null && $u['management_no'] !== '') {
+            $res = $unitIn[$uid] ?? 'unchecked';
+            if (!in_array($res, ['unchecked', 'present', 'absent'], true)) {
+                $res = 'unchecked';
             }
-            $qty = $anyChecked ? $present : null;
+            $qty = $res === 'present' ? 1 : ($res === 'absent' ? 0 : null);
         } else {
-            $raw = isset($qtyIn[$iid]) && is_string($qtyIn[$iid]) ? trim(mb_convert_kana($qtyIn[$iid], 'n')) : '';
+            $raw = isset($qtyIn[$uid]) && is_string($qtyIn[$uid]) ? trim(mb_convert_kana($qtyIn[$uid], 'n')) : '';
+            $qty = null;
             if ($raw !== '') {
                 if (!preg_match('/^\d{1,9}$/', $raw)) {
                     $pdo->rollBack();
-                    $respond(false, '棚卸数は 0 以上の整数で入力してください(' . $it['item_code'] . ' ' . $it['item_name'] . ')。');
+                    $respond(false, '棚卸数は 0 以上の整数で入力してください(' . unit_label($u) . ')。');
                 }
                 $qty = (int)$raw;
             }
+            $res = $qty === null ? 'unchecked' : ($qty > 0 ? 'present' : 'absent');
         }
-        $cs = $qty === null ? 'unconfirmed' : 'confirmed';   // 確認状態は自動(数量が入っていれば確認済み)
-        $dn = isset($notesIn[$iid]) && is_string($notesIn[$iid]) ? trim($notesIn[$iid]) : '';
-        $dn = $dn === '' ? null : mb_substr($dn, 0, 5000);
-
-        $changed = false;
-        if ($it['detail_id']) {
-            $changed = ((string)$it['count_quantity'] !== (string)$qty) || $it['confirm_status'] !== $cs || (string)$it['detail_notes'] !== (string)$dn;
-            db_exec('UPDATE inventory_count_details SET count_quantity = ?, confirm_status = ?, notes = ?, location_id_at_count = ?,
-                        counted_by = CASE WHEN ? THEN ? ELSE counted_by END, counted_at = CASE WHEN ? THEN NOW() ELSE counted_at END, updated_by = ?
-                     WHERE id = ?',
-                [$qty, $cs, $dn, $it['location_id'], $changed ? 1 : 0, actor_name(), $changed ? 1 : 0, actor_name(), $it['detail_id']]);
-        } elseif ($qty !== null || $dn !== null) {
-            db_exec('INSERT INTO inventory_count_details (count_id, item_id, count_quantity, confirm_status, location_id_at_count, counted_by, counted_at, notes, created_by, updated_by)
-                     VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)',
-                [$count['id'], $iid, $qty, $cs, $it['location_id'], actor_name(), $dn, actor_name(), actor_name()]);
+        $notes = isset($notesIn[$uid]) && is_string($notesIn[$uid]) ? trim($notesIn[$uid]) : '';
+        $notes = $notes === '' ? null : mb_substr($notes, 0, 2000);
+        $changed = ((string)$u['counted_quantity'] !== (string)$qty) || (string)$u['result_notes'] !== (string)$notes || ($u['result'] ?? 'unchecked') !== $res;
+        if ($u['result_id']) {
+            if ($changed) {
+                db_exec('UPDATE inventory_count_unit_results SET result = ?, counted_quantity = ?, notes = ?, updated_by = ?, updated_at = NOW() WHERE id = ?',
+                    [$res, $qty, $notes, actor_name(), $u['result_id']]);
+            }
+        } elseif ($qty !== null || $notes !== null) {
+            db_exec('INSERT INTO inventory_count_unit_results (count_id, unit_id, result, counted_quantity, notes, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [$count['id'], $uid, $res, $qty, $notes, actor_name(), actor_name()]);
             $changed = true;
         }
-        $saved += $changed ? 1 : 0;
-        $d = db_row('SELECT count_quantity, counted_by, counted_at FROM inventory_count_details WHERE count_id = ? AND item_id = ?', [$count['id'], $iid]);
-        $savedRows[$iid] = ['qty' => $d ? $d['count_quantity'] : null, 'counted_by' => $d['counted_by'] ?? null,
-                            'counted_at' => $d && $d['counted_at'] ? fmt_datetime($d['counted_at']) : null];
+        if ($changed) {
+            $saved++;
+            $affectedItems[(int)$u['item_id']] = true;
+        }
+        $savedUnits[$uid] = ['qty' => $qty, 'by' => $changed ? actor_name() : $u['result_by'], 'at' => $changed ? fmt_datetime(now_str()) : fmt_datetime($u['result_at'])];
+    }
+    $itemsOut = [];
+    foreach (array_keys($affectedItems) as $iid) {
+        $itemsOut[$iid] = recompute_item_detail((int)$count['id'], $iid, $itemById[$iid]['location_id'] === null ? null : (int)$itemById[$iid]['location_id']);
     }
     $pdo->commit();
-    if ($saveItem !== null && !isset($savedRows[$saveItem])) {
-        $respond(false, '対象の品目が見つかりません。');
+    if ($saveUnit !== null && !isset($savedUnits[$saveUnit])) {
+        $respond(false, '対象の内訳が見つかりません。');
     }
-    $respond(true, $saveItem !== null ? '保存しました。' : '保存しました(変更 ' . $saved . ' 件)。', ['rows' => $savedRows]);
+    $respond(true, $saveUnit !== null ? '保存しました。' : '保存しました(変更 ' . $saved . ' 件)。', ['units' => $savedUnits, 'items' => $itemsOut]);
 }
 
 // ---------------------------------------------------------------- 表示
 $locFilter = input_int('location', $_GET);
-$catFilter = input_int('category', $_GET);
+$itemFilter = input_int('item', $_GET);
 
-// カテゴリ別集計(絞り込み前の全品目で計算)
-$byCat = [];
+// 品目別集計(絞り込み前の全内訳で計算)
+$byItem = [];
 foreach ($items as $it) {
-    $key = $it['category_id'] === null ? 0 : (int)$it['category_id'];
-    if (!isset($byCat[$key])) {
-        $byCat[$key] = ['category_id' => $key, 'name' => $it['category_name'] ?? '(カテゴリ未設定)', 'item_count' => 0, 'entered' => 0,
-                        'total' => 0, 'prev_total' => 0, 'prev_count' => 0, 'diff' => 0, 'needs_check' => 0, 'items' => []];
-    }
-    $g = &$byCat[$key];
-    $prev = $prevQty[(int)$it['id']] ?? null;
-    $g['item_count']++;
-    if ($it['count_quantity'] !== null) {
-        $g['entered']++;
-        $g['total'] += (int)$it['count_quantity'];
-    }
-    if ($prev !== null) {
-        $g['prev_total'] += (int)$prev;
-        $g['prev_count']++;
-    }
-    if ($prev !== null && $it['count_quantity'] !== null) {
-        $g['diff'] += (int)$it['count_quantity'] - (int)$prev;
-    }
-    if ($it['confirm_status'] === 'needs_check') {
-        $g['needs_check']++;
-    }
-    $g['items'][] = ['id' => (int)$it['id'], 'item_code' => $it['item_code'], 'item_name' => $it['item_name'], 'condition_code' => $it['condition_code'],
-                     'qty' => $it['count_quantity'], 'prev' => $prev, 'confirm_status' => $it['confirm_status'], 'location_name' => $it['location_name']];
-    unset($g);
-}
-uasort($byCat, function ($a, $b) {
-    if ($a['category_id'] === 0) { return 1; }
-    if ($b['category_id'] === 0) { return -1; }
-    return strcmp($a['name'], $b['name']);
-});
-$catOrder = [];
-foreach (db_all('SELECT id FROM categories ORDER BY sort_order, id') as $r) {
-    $catOrder[(int)$r['id']] = count($catOrder);
-}
-uasort($byCat, fn($a, $b) => ($catOrder[$a['category_id']] ?? PHP_INT_MAX) <=> ($catOrder[$b['category_id']] ?? PHP_INT_MAX));
-
-if ($locFilter !== null) {
-    $items = array_values(array_filter($items, fn($it) => (int)$it['location_id'] === $locFilter || ($locFilter === 0 && $it['location_id'] === null)));
-}
-if ($catFilter !== null) {
-    $items = array_values(array_filter($items, fn($it) => (int)$it['category_id'] === $catFilter || ($catFilter === 0 && $it['category_id'] === null)));
-}
-$categories = db_all('SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order, id');
-$summary = ['entered' => 0, 'total' => 0, 'needs_check' => 0, 'diff' => 0];
-foreach ($items as &$it) {
     $iid = (int)$it['id'];
-    $it['units'] = $unitsByItem[$iid] ?? [];
-    $it['prev_quantity'] = $prevQty[$iid] ?? null;
-    $it['diff'] = ($it['prev_quantity'] === null || $it['count_quantity'] === null) ? null : ((int)$it['count_quantity'] - (int)$it['prev_quantity']);
-    if ($it['count_quantity'] !== null) {
-        $summary['entered']++;
-        $summary['total'] += (int)$it['count_quantity'];
+    $g = ['item_id' => $iid, 'name' => $it['item_name'], 'unit_count' => 0, 'entered' => 0, 'total' => 0, 'prev_total' => 0, 'prev_count' => 0, 'diff' => 0];
+    foreach ($unitsByItem[$iid] ?? [] as $u) {
+        $prev = $prevUnitQty[(int)$u['id']] ?? null;
+        $g['unit_count']++;
+        if ($u['counted_quantity'] !== null) {
+            $g['entered']++;
+            $g['total'] += (int)$u['counted_quantity'];
+        }
+        if ($prev !== null) {
+            $g['prev_total'] += (int)$prev;
+            $g['prev_count']++;
+        }
+        if ($prev !== null && $u['counted_quantity'] !== null) {
+            $g['diff'] += (int)$u['counted_quantity'] - (int)$prev;
+        }
     }
-    if ($it['confirm_status'] === 'needs_check') {
-        $summary['needs_check']++;
-    }
-    if ($it['diff'] !== null && $it['diff'] !== 0) {
-        $summary['diff']++;
+    if ($g['unit_count'] > 0 || $it['detail_id']) {
+        $byItem[$iid] = $g;
     }
 }
-unset($it);
+
+// 絞り込み(表示用)
+$rows = [];   // [item, units]
+$summary = ['entered' => 0, 'units' => 0, 'total' => 0, 'diff' => 0];
+foreach ($items as $it) {
+    $iid = (int)$it['id'];
+    if ($itemFilter !== null && $iid !== $itemFilter) {
+        continue;
+    }
+    $units = $unitsByItem[$iid] ?? [];
+    if ($locFilter !== null) {
+        $units = array_values(array_filter($units, fn($u) => (int)$u['eff_location_id'] === $locFilter || ($locFilter === 0 && $u['eff_location_id'] === null)));
+    }
+    if (!$units && $locFilter !== null) {
+        continue;
+    }
+    foreach ($units as &$u) {
+        $u['prev_quantity'] = $prevUnitQty[(int)$u['id']] ?? null;
+        $u['diff'] = ($u['prev_quantity'] === null || $u['counted_quantity'] === null) ? null : ((int)$u['counted_quantity'] - (int)$u['prev_quantity']);
+        $summary['units']++;
+        if ($u['counted_quantity'] !== null) {
+            $summary['entered']++;
+            $summary['total'] += (int)$u['counted_quantity'];
+        }
+        if ($u['diff'] !== null && $u['diff'] !== 0) {
+            $summary['diff']++;
+        }
+    }
+    unset($u);
+    $rows[] = ['item' => $it, 'units' => $units, 'prev_total' => $prevItemQty[$iid] ?? null];
+}
+$locations = db_all('SELECT * FROM locations WHERE is_active = 1 ORDER BY sort_order, id');
 
 render('counts/entry', [
     'title' => ($editable ? '棚卸入力' : '棚卸結果') . ' ' . $count['count_name'],
-    'count' => $count, 'editable' => $editable, 'items' => $items, 'prevCount' => $prevCount, 'prevUnit' => $prevUnit,
-    'locations' => $locations, 'locFilter' => $locFilter, 'categories' => $categories, 'catFilter' => $catFilter, 'byCat' => $byCat, 'summary' => $summary,
+    'count' => $count, 'editable' => $editable, 'rows' => $rows, 'prevCount' => $prevCount,
+    'locations' => $locations, 'locFilter' => $locFilter, 'itemFilter' => $itemFilter, 'byItem' => $byItem, 'summary' => $summary, 'items' => $items,
 ]);
