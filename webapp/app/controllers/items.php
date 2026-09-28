@@ -128,7 +128,66 @@ if ($page === 'item' && ($action === 'new' || $action === 'edit')) {
         'condition_code' => null, 'stock_type' => 'internal', 'customer_id' => null, 'manufacturer' => '', 'model_number' => '',
         'serial_number' => '', 'network_info' => '', 'location_id' => null, 'notes' => '', 'is_active' => 1, 'sort_order' => null,
     ];
-    render('items/form', ['title' => $action === 'edit' ? '品目編集' : '品目登録', 'item' => $item, 'errors' => []] + item_masters());
+    $units = $item['id'] ? db_all('SELECT * FROM inventory_units WHERE item_id = ? AND is_active = 1 ORDER BY id', [$item['id']]) : [];
+    render('items/form', ['title' => $action === 'edit' ? '品目編集' : '品目登録', 'item' => $item, 'units' => $units, 'errors' => []] + item_masters());
+}
+
+/** フォームの個体行を正規化して返す(空行は除外)。エラーがあれば $errors に追加 */
+function item_units_from_post(array &$errors): array
+{
+    $rows = [];
+    $in = $_POST['units'] ?? [];
+    if (!is_array($in)) {
+        return $rows;
+    }
+    foreach ($in as $i => $r) {
+        if (!is_array($r)) {
+            continue;
+        }
+        $u = [
+            'id'            => input_int('id', $r),
+            'management_no' => input_str('management_no', $r, 50),
+            'serial_number' => input_str('serial_number', $r, 100),
+            'ip_address'    => input_str('ip_address', $r, 100),
+            'status'        => input_str('status', $r, 20) ?? 'in_stock',
+            'location_id'   => input_int('location_id', $r),
+            'notes'         => input_str('notes', $r, 500),
+        ];
+        $empty = $u['management_no'] === null && $u['serial_number'] === null && $u['ip_address'] === null && $u['notes'] === null;
+        if ($empty && $u['id'] === null) {
+            continue;   // 空行
+        }
+        if ($u['management_no'] === null && $u['serial_number'] === null) {
+            $errors[] = '個体の ' . ((int)$i + 1) . ' 行目: 管理No またはシリアル番号のどちらかを入力してください。';
+        }
+        if (!isset(unit_status_options()[$u['status']])) {
+            $errors[] = '個体の ' . ((int)$i + 1) . ' 行目: 状態が不正です。';
+        }
+        if ($u['location_id'] !== null && !db_val('SELECT 1 FROM locations WHERE id = ?', [$u['location_id']])) {
+            $errors[] = '個体の ' . ((int)$i + 1) . ' 行目: 保管場所が存在しません。';
+        }
+        $rows[] = $u;
+    }
+    return $rows;
+}
+
+/** 個体行を保存(既存は更新、新規は追加) */
+function item_units_save(int $itemId, array $rows, ?int $itemLocationId): int
+{
+    $added = 0;
+    foreach ($rows as $u) {
+        $loc = $u['location_id'] ?? $itemLocationId;
+        if ($u['id'] !== null) {
+            db_exec('UPDATE inventory_units SET management_no=?, serial_number=?, ip_address=?, status=?, location_id=?, notes=?, updated_by=? WHERE id=? AND item_id=?',
+                [$u['management_no'], $u['serial_number'], $u['ip_address'], $u['status'], $loc, $u['notes'], actor_name(), $u['id'], $itemId]);
+        } else {
+            db_insert('INSERT INTO inventory_units (item_id, management_no, serial_number, ip_address, status, location_id, notes, is_active, created_by, updated_by)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)',
+                [$itemId, $u['management_no'], $u['serial_number'], $u['ip_address'], $u['status'], $loc, $u['notes'], actor_name(), actor_name()]);
+            $added++;
+        }
+    }
+    return $added;
 }
 
 // ---------------------------------------------------------------- 保存
@@ -171,9 +230,11 @@ if ($page === 'item' && $action === 'save' && $_SERVER['REQUEST_METHOD'] === 'PO
             $errors[] = '選択したマスタ値が存在しません(' . $k . ')。';
         }
     }
+    $unitRows = $v['management_type'] === 'unit' ? item_units_from_post($errors) : [];
     if ($errors) {
         $item = array_merge($existing ?? ['id' => null, 'item_code' => '(自動採番)', 'is_active' => 1], $v, ['id' => $id]);
-        render('items/form', ['title' => $id ? '品目編集' : '品目登録', 'item' => $item, 'errors' => $errors] + item_masters());
+        $unitsForForm = $v['management_type'] === 'unit' ? array_map(fn($u) => $u + [], $unitRows) : [];
+        render('items/form', ['title' => $id ? '品目編集' : '品目登録', 'item' => $item, 'units' => $unitsForForm, 'errors' => $errors] + item_masters());
         exit;
     }
     if ($existing) {
@@ -183,7 +244,8 @@ if ($page === 'item' && $action === 'save' && $_SERVER['REQUEST_METHOD'] === 'PO
             [$v['item_name'], $v['management_type'], $v['category_id'], $v['condition_code'], $v['stock_type'], $v['customer_id'],
              $v['manufacturer'], $v['model_number'], $v['serial_number'], $v['network_info'], $v['location_id'], $v['notes'],
              $v['sort_order'] ?? (int)$existing['sort_order'], actor_name(), $id]);
-        flash_set('success', '品目を更新しました。');
+        $added = item_units_save($id, $unitRows, $v['location_id']);
+        flash_set('success', '品目を更新しました。' . ($added ? "(個体を {$added} 件追加)" : ''));
         redirect('item', ['id' => $id]);
     }
     $pdo = db();
@@ -196,8 +258,9 @@ if ($page === 'item' && $action === 'save' && $_SERVER['REQUEST_METHOD'] === 'PO
          $v['manufacturer'], $v['model_number'], $v['serial_number'], $v['network_info'], $v['location_id'], $v['notes'], $sort,
          actor_name(), actor_name()]);
     db_exec('UPDATE inventory_items SET item_code = ? WHERE id = ?', [sprintf('ITEM-%06d', $newId), $newId]);
+    $added = item_units_save($newId, $unitRows, $v['location_id']);
     $pdo->commit();
-    flash_set('success', '品目を登録しました(品目コード ' . sprintf('ITEM-%06d', $newId) . ')。');
+    flash_set('success', '品目を登録しました(品目コード ' . sprintf('ITEM-%06d', $newId) . ')。' . ($added ? "個体を {$added} 件登録しました。" : ''));
     redirect('item', ['id' => $newId]);
 }
 

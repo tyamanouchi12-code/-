@@ -19,6 +19,41 @@
   <label>シリアル番号<small class="hint">(個体管理品は個体側に登録)</small><input type="text" name="serial_number" value="<?= h($item['serial_number']) ?>" maxlength="100"></label>
   <label>IPアドレス・ネットワーク情報<input type="text" name="network_info" value="<?= h($item['network_info']) ?>" maxlength="255"></label>
   <label class="span2">備考<textarea name="notes" rows="4"><?= h($item['notes']) ?></textarea></label>
+
+  <fieldset class="span2" id="unit-section" <?= $item['management_type'] === 'unit' ? '' : 'hidden' ?>>
+    <legend>個体情報(管理方法が「個体管理」のとき)</legend>
+    <p class="hint">実物1台ごとに1行入力します。管理No またはシリアル番号のどちらかは必須です。空の行は無視されます。<?php if ($item['id']): ?>登録済みの個体を無効にするには、品目詳細の個体一覧から「編集」→「無効にする」を使ってください。<?php endif; ?></p>
+    <div class="table-wrap"><table class="table table-units" id="unit-table">
+      <thead><tr><th>管理No</th><th>シリアル番号</th><th>IPアドレス</th><th>状態</th><th>保管場所</th><th>備考</th><th></th></tr></thead>
+      <tbody>
+      <?php $unitRows = $units ?? []; $ri = 0; ?>
+      <?php foreach ($unitRows as $u): ?>
+        <tr class="unit-input-row">
+          <td><input type="hidden" name="units[<?= $ri ?>][id]" value="<?= h($u['id'] ?? '') ?>"><input type="text" name="units[<?= $ri ?>][management_no]" value="<?= h($u['management_no'] ?? '') ?>" maxlength="50" placeholder="例: NKC：0006"></td>
+          <td><input type="text" name="units[<?= $ri ?>][serial_number]" value="<?= h($u['serial_number'] ?? '') ?>" maxlength="100"></td>
+          <td><input type="text" name="units[<?= $ri ?>][ip_address]" value="<?= h($u['ip_address'] ?? '') ?>" maxlength="100"></td>
+          <td><select name="units[<?= $ri ?>][status]"><?php foreach (unit_status_options() as $k => $v): ?><option value="<?= h($k) ?>" <?= ($u['status'] ?? 'in_stock') === $k ? 'selected' : '' ?>><?= h($v) ?></option><?php endforeach; ?></select></td>
+          <td><select name="units[<?= $ri ?>][location_id]"><option value="">(品目と同じ)</option><?php foreach ($locations as $l): ?><option value="<?= h($l['id']) ?>" <?= ($u['location_id'] ?? null) == $l['id'] ? 'selected' : '' ?>><?= h($l['name']) ?></option><?php endforeach; ?></select></td>
+          <td><input type="text" name="units[<?= $ri ?>][notes]" value="<?= h($u['notes'] ?? '') ?>" maxlength="500"></td>
+          <td class="nowrap"><?= !empty($u['id']) ? '<span class="muted small">登録済</span>' : '<button type="button" class="btn btn-sm unit-remove">削除</button>' ?></td>
+        </tr>
+      <?php $ri++; endforeach; ?>
+      </tbody>
+    </table></div>
+    <template id="unit-row-template">
+      <tr class="unit-input-row">
+        <td><input type="hidden" name="units[__i__][id]" value=""><input type="text" name="units[__i__][management_no]" maxlength="50" placeholder="例: NKC：0006"></td>
+        <td><input type="text" name="units[__i__][serial_number]" maxlength="100"></td>
+        <td><input type="text" name="units[__i__][ip_address]" maxlength="100"></td>
+        <td><select name="units[__i__][status]"><?php foreach (unit_status_options() as $k => $v): ?><option value="<?= h($k) ?>"><?= h($v) ?></option><?php endforeach; ?></select></td>
+        <td><select name="units[__i__][location_id]"><option value="">(品目と同じ)</option><?php foreach ($locations as $l): ?><option value="<?= h($l['id']) ?>"><?= h($l['name']) ?></option><?php endforeach; ?></select></td>
+        <td><input type="text" name="units[__i__][notes]" maxlength="500"></td>
+        <td class="nowrap"><button type="button" class="btn btn-sm unit-remove">削除</button></td>
+      </tr>
+    </template>
+    <button type="button" class="btn btn-sm" id="unit-add">＋ 個体の行を追加</button>
+  </fieldset>
+
   <div class="span2 form-actions">
     <button type="submit" class="btn btn-primary">保存</button>
   </div>

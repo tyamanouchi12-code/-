@@ -182,6 +182,9 @@ tr.has-diff td.diff-cell { background: #fff7e0; }
 tr.entry-row.entered .item-name { }
 .cards-3 { grid-template-columns: repeat(3, 1fr); }
 
+.table-units input[type=text], .table-units select { width: 100%; min-width: 90px; }
+.table-units td { padding: 4px; }
+
 /* ===== スマートフォン対応 ===== */
 @media (max-width: 800px) {
   body { font-size: 14px; }

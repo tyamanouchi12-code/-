@@ -269,3 +269,39 @@
   });
   refreshItemMode();
 })();
+
+// ---- 品目フォーム: 個体情報の入力欄 ----
+(function () {
+  'use strict';
+  var section = document.getElementById('unit-section');
+  if (!section) { return; }
+  var typeSel = document.querySelector('select[name=management_type]');
+  var table = document.getElementById('unit-table').querySelector('tbody');
+  var tpl = document.getElementById('unit-row-template');
+  var addBtn = document.getElementById('unit-add');
+  function nextIndex() {
+    var max = -1;
+    table.querySelectorAll('input[name^="units["]').forEach(function (i) {
+      var m = i.name.match(/^units\[(\d+)\]/); if (m) { max = Math.max(max, parseInt(m[1], 10)); }
+    });
+    return max + 1;
+  }
+  function addRow() {
+    var html = tpl.innerHTML.replace(/__i__/g, String(nextIndex()));
+    var tmp = document.createElement('tbody'); tmp.innerHTML = html.trim();
+    var row = tmp.firstElementChild;
+    table.appendChild(row);
+    row.querySelector('input[type=text]').focus();
+  }
+  function toggle() {
+    var isUnit = typeSel.value === 'unit';
+    section.hidden = !isUnit;
+    if (isUnit && table.querySelectorAll('tr').length === 0) { addRow(); }
+  }
+  typeSel.addEventListener('change', toggle);
+  addBtn.addEventListener('click', addRow);
+  table.addEventListener('click', function (e) {
+    if (e.target.classList.contains('unit-remove')) { e.target.closest('tr').remove(); }
+  });
+  toggle();
+})();
