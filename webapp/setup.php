@@ -60,7 +60,7 @@ if ($dbError === null && $userCount > 0) {
 <div class="login-box">
   <h1><?= h(APP_NAME) ?> 初期設定</h1>
   <?php if ($dbError !== null): ?>
-    <div class="flash flash-error">データベースに接続できません。app/config.php の接続情報と、sql/001_schema.sql が実行済みかを確認してください。<br><small><?= h($dbError) ?></small></div>
+    <div class="flash flash-error">データベースに接続できません。app/config.local.php(なければ app/config.php)の接続情報と、sql/001_schema.sql が実行済みかを確認してください。<br><small><?= h($dbError) ?></small></div>
   <?php elseif ($done): ?>
     <div class="flash flash-success">管理者「<?= h($name) ?>」を作成しました。<strong>このファイル(setup.php)をサーバーから削除</strong>してから、<a href="index.php?page=login">ログイン画面</a>へ進んでください。</div>
   <?php else: ?>

@@ -19,21 +19,25 @@
    3. `sql/003_migrate_excel.sql`(Excel からの移行データ: 品目 109 件、個体 6 件、棚卸 2 件)
 4. 実行後、左の一覧に 12 個のテーブルが表示されれば完了。「インポート」タブでファイルを選んで実行しても同じです。
 
-## 3. 設定ファイルを書き換える
+## 3. サーバー専用の設定ファイルを作る
 
-`'app'` の `'name'` が画面のタイトルになります(初期値: NKC 在庫管理システム)。変更したい場合はここを書き換えます。
-
-`webapp/app/config.php` をテキストエディタ(UTF-8 で保存できるもの)で開き、`'db'` の 4 行を手順1の値に変更して保存します。
+`webapp/app/config.local.php.example` をコピーして `config.local.php` という名前にし、テキストエディタ(UTF-8 で保存できるもの)で開いて手順1の値に書き換えます。
 
 ```php
+return [
     'db' => [
-        'host'    => 'mysql1234.xserver.jp',   // MySQLホスト名
-        'name'    => 'xxxxx_nkc',              // データベース名
-        'user'    => 'xxxxx_nkc',              // MySQLユーザー名
-        'pass'    => '********',               // パスワード
-        'charset' => 'utf8mb4',
+        'host' => 'mysql1234.xserver.jp',   // MySQL情報タブの「MySQLホスト名」
+        'name' => 'xxxxx_tanaoroshi',       // データベース名
+        'user' => 'xxxxx_tanaoro',          // MySQLユーザー名
+        'pass' => '********',               // パスワード
     ],
+    'app' => [
+        'name' => 'NKC 在庫管理システム',   // 画面のタイトル
+    ],
+];
 ```
+
+`config.local.php` に書いた値は `config.php` の初期値より優先され、**プログラムを上書きアップロードしても消えません**。`config.php` 自体は書き換えないでください(更新のたびに初期値で上書きされます)。
 
 ## 4. ファイルをアップロードする(FFFTP)
 
@@ -47,7 +51,8 @@
        setup.php          ← 初期設定後に削除
        assets/style.css, app.js
        app/.htaccess      ← app/ への直接アクセスを禁止
-       app/config.php     ← 手順3で編集したもの
+       app/config.php           ← 初期値(触らない)
+       app/config.local.php     ← 手順3で作ったサーバー専用の設定
        app/... (bootstrap.php, lib, controllers, views)
      ```
 3. サーバーパネル → **PHP Ver.切替** で、対象ドメインの PHP が **8.1 以上**になっているか確認する。
@@ -69,7 +74,7 @@
 
 | 症状 | 確認すること |
 |---|---|
-| 「データベースに接続できません」 | config.php のホスト名・DB名・ユーザー名・パスワード。MySQLユーザーにアクセス権が付与されているか |
+| 「データベースに接続できません」/ Access denied for user 'root'@'localhost' | `app/config.local.php` が無い、または値が違う。上書きアップロードで `config.php` が初期値に戻っても、`config.local.php` があれば影響しない |
 | 「ページが見つかりません」(メニューは新しいのに) | 設置フォルダ直下の `index.php` が古い。`webapp/index.php` と `assets/` を再アップロード。画面下部の「版」が最新か確認 |
 | 画面が真っ白 / 500 エラー | PHP のバージョンが 8.1 以上か。`app/` フォルダごとアップロードされているか |
 | `app/config.php` がブラウザで表示されてしまう | `app/.htaccess` がアップロードされているか(隠しファイル) |
@@ -78,11 +83,12 @@
 
 ## 更新のしかた
 
-プログラムを更新するときは `webapp` の中身を上書きアップロードします(`app/config.php` は上書きしないよう注意)。データベースの変更が必要な更新は、下の表のSQLを phpMyAdmin で追加実行してください。
+プログラムを更新するときは `webapp` の中身をまるごと上書きアップロードします。接続情報は `app/config.local.php` にあるので、上書きしても消えません。データベースの変更が必要な更新は、下の表のSQLを phpMyAdmin で追加実行してください。
 
 | 更新日 | 内容 | 実行するSQL(すでに 001 を実行済みの環境) |
 |---|---|---|
 | 2026-09-18 | 持ち出し・戻し機能、現在庫表示、スマホ対応 | `sql/004_add_checkouts.sql` |
+| 2026-09-28 (版 .5) | サーバー専用設定 `app/config.local.php` 方式に変更。接続エラー時は案内画面を表示 | なし。`config.local.php` を作成(手順3) |
 | 2026-09-18 (版 .4) | 行ごとの「確定」保存、カテゴリ行クリックで絞り込み、確認状態の廃止、スマホでカード表示 | なし(ファイル上書きのみ) |
 | 2026-09-18 | カテゴリ別集計、カテゴリ必須化、名称変更 | (任意)`sql/005_optional_apply_categories.sql` — Excel 移行品目 109 件にカテゴリ初期案を一括設定。実行しない場合は品目編集画面で 1 件ずつ選択 |
 

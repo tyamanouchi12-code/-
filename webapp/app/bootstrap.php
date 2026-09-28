@@ -6,8 +6,16 @@ mb_internal_encoding('UTF-8');
 
 define('APP_DIR', __DIR__);
 $config = require APP_DIR . '/config.php';
+// サーバー専用の設定(app/config.local.php)があれば上書きする。
+// config.local.php はリポジトリに含めないため、webapp をまるごと上書きアップロードしても消えない。
+if (is_file(APP_DIR . '/config.local.php')) {
+    $local = require APP_DIR . '/config.local.php';
+    if (is_array($local)) {
+        $config = array_replace_recursive($config, $local);
+    }
+}
 define('APP_NAME', $config['app']['name']);
-define('APP_VERSION', '2026-09-18.4');   // 画面下部に表示。アップロード漏れの確認用(更新のたびに上げる)
+define('APP_VERSION', '2026-09-28.5');   // 画面下部に表示。アップロード漏れの確認用(更新のたびに上げる)
 date_default_timezone_set($config['app']['timezone']);
 
 require APP_DIR . '/lib/db.php';

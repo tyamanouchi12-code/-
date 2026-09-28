@@ -40,6 +40,6 @@ try {
         $errors[] = '利用者が登録されていません。setup.php を開いて最初の管理者を作成してください。';
     }
 } catch (PDOException $e) {
-    $errors[] = 'データベースに接続できません。app/config.php を確認してください。';
+    $errors[] = 'データベースに接続できません。app/config.local.php(なければ app/config.php)の接続情報を確認してください。';
 }
 render('login', ['title' => 'ログイン', 'errors' => $errors, 'loginId' => $loginId]);

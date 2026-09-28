@@ -1,0 +1,2 @@
+# サーバー専用の設定(接続情報)はリポジトリに入れない
+webapp/app/config.local.php

@@ -30,4 +30,5 @@
 - `webapp/index.php?page=...` がすべての画面の入口。`webapp/app/` は `.htaccess` で直接アクセス禁止。
 - 持ち出し・戻し(`?page=checkout`)はスマホ向けレイアウト。現在庫 = 最新確定棚卸数 − 持ち出し + 戻し(`webapp/app/lib/stock.php`)。
 - 権限は利用者ごとに設定(`webapp/app/lib/permissions.php`): 棚卸の確定 / 品目・個体の無効化 / マスタ管理 / 利用者管理。
-- ローカルでの動作確認: MariaDB に `sql/*.sql` を投入し、`webapp/app/config.php` を書き換えて `php -S 127.0.0.1:8080 -t webapp`。
+- 接続情報はサーバー上の `webapp/app/config.local.php`(リポジトリ対象外)に書く。`config.php` は初期値。
+- ローカルでの動作確認: MariaDB に `sql/*.sql` を投入し、`webapp/app/config.local.php` を作って `php -S 127.0.0.1:8080 -t webapp`。
