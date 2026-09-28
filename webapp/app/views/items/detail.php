@@ -8,15 +8,13 @@
       <button type="submit" class="btn <?= (int)$item['is_active'] ? 'btn-danger' : '' ?>"><?= (int)$item['is_active'] ? '無効にする' : '再有効化' ?></button>
     </form>
     <?php endif; ?>
-    <a class="btn btn-ghost" href="<?= h(url('items')) ?>">一覧へ</a>
   </div>
 </div>
 
-<div class="cards cards-4 stock-cards">
+<div class="cards cards-3 stock-cards">
   <div class="card"><div class="card-label">現在庫(計算・合計)</div><div class="card-value"><?= $stock['current'] === null ? '<span class="muted">–</span>' : h($stock['current']) ?></div><div class="card-sub">棚卸数 − 持ち出し + 戻し</div></div>
   <div class="card"><div class="card-label">最新棚卸数(合計)</div><div class="card-value"><?= $stock['latest_qty'] === null ? '<span class="muted">–</span>' : h($stock['latest_qty']) ?></div><div class="card-sub"><?= $latestCount ? h($latestCount['count_name']) : '確定済み棚卸なし' ?></div></div>
   <div class="card"><div class="card-label">持ち出し中</div><div class="card-value"><?= h($stock['open_qty']) ?></div><div class="card-sub"><?= $stock['open'] ? h(implode(' / ', array_map('checkout_label', $stock['open']))) : 'なし' ?></div></div>
-  <div class="card"><div class="card-label">持ち出し登録</div><div class="card-sub"><a class="btn btn-sm btn-primary" href="<?= h(url('checkout', ['mode' => 'out', 'item_id' => $item['id']])) ?>">この品目を持ち出す</a> <a class="btn btn-sm" href="<?= h(url('checkout', ['mode' => 'in'])) ?>">戻す</a></div></div>
 </div>
 
 <div class="detail-grid">

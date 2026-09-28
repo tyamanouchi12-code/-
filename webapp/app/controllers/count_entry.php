@@ -152,7 +152,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
     if ($saveUnit !== null && !isset($savedUnits[$saveUnit])) {
         $respond(false, '対象の内訳が見つかりません。');
     }
-    $respond(true, $saveUnit !== null ? '保存しました。' : '保存しました(変更 ' . $saved . ' 件)。', ['units' => $savedUnits, 'items' => $itemsOut]);
+    // 「棚卸を締める」: 保存に続けて全体確定
+    if (($_POST['close'] ?? '') === '1') {
+        if (!can('count.confirm')) {
+            $respond(false, '保存しました(変更 ' . $saved . ' 件)。棚卸を締める権限がないため、締めは行っていません。');
+        }
+        $unentered = (int)db_val("SELECT COUNT(*) FROM inventory_units u JOIN inventory_items i ON i.id = u.item_id
+                                   WHERE u.is_active = 1 AND u.status <> 'disposed' AND i.is_active = 1
+                                     AND NOT EXISTS (SELECT 1 FROM inventory_count_unit_results r WHERE r.count_id = ? AND r.unit_id = u.id AND r.counted_quantity IS NOT NULL)", [$count['id']]);
+        db_exec("UPDATE inventory_counts SET status = 'confirmed', end_date = COALESCE(end_date, CURDATE()), confirmed_by = ?, confirmed_at = NOW() WHERE id = ?", [actor_name(), $count['id']]);
+        $respond(true, '入力内容を登録し、棚卸を締めました(変更 ' . $saved . ' 件)。' . ($unentered > 0 ? "数量未入力の内訳が {$unentered} 件あります。未入力の内訳は履歴に含まれません。" : ''));
+    }
+    $respond(true, $saveUnit !== null ? '保存しました。' : '途中保存しました(変更 ' . $saved . ' 件)。', ['units' => $savedUnits, 'items' => $itemsOut]);
 }
 
 // ---------------------------------------------------------------- 表示

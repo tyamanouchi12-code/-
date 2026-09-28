@@ -9,7 +9,7 @@
   <select name="location"><option value="">保管場所: すべて</option><?php foreach ($locations as $l): ?><option value="<?= h($l['id']) ?>" <?= $f['location'] == $l['id'] ? 'selected' : '' ?>><?= h($l['name']) ?></option><?php endforeach; ?></select>
   <select name="condition"><option value="">状態: すべて</option><?php foreach ($conditions as $c): ?><option value="<?= h($c['code']) ?>" <?= $f['condition'] === $c['code'] ? 'selected' : '' ?>><?= h($c['name']) ?></option><?php endforeach; ?><option value="_none" <?= $f['condition'] === '_none' ? 'selected' : '' ?>>(未設定)</option></select>
   <select name="active"><option value="1" <?= $f['active'] === '1' ? 'selected' : '' ?>>有効のみ</option><option value="0" <?= $f['active'] === '0' ? 'selected' : '' ?>>無効のみ</option><option value="all" <?= $f['active'] === 'all' ? 'selected' : '' ?>>すべて</option></select>
-  <button type="submit" class="btn">絞り込み</button>
+  <button type="submit" class="btn btn-primary">絞り込み</button>
   <a href="<?= h(url('items')) ?>" class="btn btn-ghost">クリア</a>
 </form>
 

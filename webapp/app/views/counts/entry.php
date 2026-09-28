@@ -1,23 +1,31 @@
+<?php
+// 締め/途中保存ボタン(上下に同じものを出す)。entry-form の外に置くため form 属性で紐付ける
+$actionButtons = function () use ($count, $editable) {
+    if ($count['status'] === 'preparing') {
+        echo '<form method="post" action="' . h(url('count', ['action' => 'status'])) . '" class="inline">' . csrf_field() . '<input type="hidden" name="id" value="' . h($count['id']) . '"><input type="hidden" name="to" value="in_progress"><button class="btn btn-primary" type="submit">棚卸を開始</button></form>';
+    } elseif ($editable) {
+        echo '<button type="submit" form="entry-form" class="btn" name="close" value="0">途中保存</button> ';
+        if (can('count.confirm')) {
+            echo '<button type="submit" form="entry-form" class="btn btn-success" name="close" value="1" data-confirm="入力内容を保存して、この棚卸を締めます(全体確定)。締めた後は入力できなくなります(権限があれば解除できます)。よろしいですか?">棚卸を締める(一括登録・全体確定)</button>';
+        } else {
+            echo '<span class="muted">棚卸を締めるのは権限のある利用者が行います</span>';
+        }
+    } elseif ($count['status'] === 'confirmed' && can('count.confirm')) {
+        echo '<form method="post" action="' . h(url('count', ['action' => 'status'])) . '" class="inline" data-confirm="締めを解除して再入力できるようにします。よろしいですか?">' . csrf_field() . '<input type="hidden" name="id" value="' . h($count['id']) . '"><input type="hidden" name="to" value="in_progress"><button class="btn" type="submit">締めを解除</button></form>';
+    }
+};
+?>
 <div class="page-head">
   <h1><?= h($count['count_name']) ?> <span class="badge badge-<?= h($count['status']) ?>"><?= h(count_status_label($count['status'])) ?></span></h1>
   <div>
-    <?php if ($count['status'] === 'preparing'): ?>
-      <form method="post" action="<?= h(url('count', ['action' => 'status'])) ?>" class="inline"><?= csrf_field() ?><input type="hidden" name="id" value="<?= h($count['id']) ?>"><input type="hidden" name="to" value="in_progress"><button class="btn btn-primary" type="submit">棚卸を開始</button></form>
-    <?php elseif ($count['status'] === 'in_progress'): ?>
-      <?php if (can('count.confirm')): ?>
-      <form method="post" action="<?= h(url('count', ['action' => 'status'])) ?>" class="inline" data-confirm="この棚卸を締めます(全体確定)。締めた後は各行の入力ができなくなります(権限があれば解除できます)。よろしいですか?"><?= csrf_field() ?><input type="hidden" name="id" value="<?= h($count['id']) ?>"><input type="hidden" name="to" value="confirmed"><button class="btn btn-success" type="submit">棚卸を締める(全体確定)</button></form>
-      <?php else: ?><span class="muted">棚卸を締めるのは権限のある利用者が行います</span><?php endif; ?>
-    <?php elseif ($count['status'] === 'confirmed' && can('count.confirm')): ?>
-      <form method="post" action="<?= h(url('count', ['action' => 'status'])) ?>" class="inline" data-confirm="締めを解除して再入力できるようにします。よろしいですか?"><?= csrf_field() ?><input type="hidden" name="id" value="<?= h($count['id']) ?>"><input type="hidden" name="to" value="in_progress"><button class="btn" type="submit">締めを解除</button></form>
-    <?php endif; ?>
+    <?php $actionButtons(); ?>
     <a class="btn btn-ghost" href="<?= h(url('count', ['action' => 'edit', 'id' => $count['id']])) ?>">棚卸情報を編集</a>
-    <a class="btn btn-ghost" href="<?= h(url('counts')) ?>">一覧へ</a>
   </div>
 </div>
 
 <?php if ($editable): ?>
 <div class="flow-hint">
-  <strong>入力の流れ</strong>: ① 内訳ごとに今回の数量(管理Noのある物は有/無)を入れて右端の<span class="btn btn-sm btn-primary btn-fake">確定</span>を押す(その行だけ保存されます) → ② 全部終わったら右上の「棚卸を締める(全体確定)」を押す
+  <strong>入力の流れ</strong>: 内訳ごとに今回の数量(管理Noのある物は有/無)を入れる → 「棚卸を締める」を押すと、入力内容をまとめて登録して確定します。途中でやめるときは「途中保存」を押してください。
 </div>
 <?php endif; ?>
 
@@ -66,18 +74,18 @@
 
 <h2 id="entry-title">内訳ごとの入力 <span class="muted" id="entry-scope"><?= $itemFilter !== null ? '(品目で絞り込み中)' : '(全件)' ?></span></h2>
 <?php if ($editable): ?>
-<form method="post" action="<?= h(url('count_entry', ['action' => 'save', 'id' => $count['id']] + ($locFilter !== null ? ['location' => $locFilter] : []) + ($itemFilter !== null ? ['item' => $itemFilter] : []))) ?>" id="entry-form">
+<form method="post" action="<?= h(url('count_entry', ['action' => 'save', 'id' => $count['id']] + ($locFilter !== null ? ['location' => $locFilter] : []) + ($itemFilter !== null ? ['item' => $itemFilter] : []))) ?>" id="entry-form" data-dirty-check>
   <?= csrf_field() ?>
 <?php endif; ?>
 <div class="table-wrap"><table class="table table-entry table-cards" id="entry-table">
-  <thead><tr><th>#</th><th>内訳名(品名)</th><th>状態</th><th>保管場所</th><th class="num">前回</th><th class="num">今回</th><th class="num">差異</th><th>メモ</th><th>担当 / 日時</th><th></th></tr></thead>
+  <thead><tr><th>#</th><th>内訳名(品名)</th><th>状態</th><th>保管場所</th><th class="num">前回</th><th class="num">今回</th><th class="num">差異</th><th>メモ</th></tr></thead>
   <tbody>
   <?php $n = 0; foreach ($rows as $grp): $it = $grp['item']; $iid = (int)$it['id']; ?>
     <tr class="item-head" data-item="<?= $iid ?>">
       <td colspan="4" data-label="品目"><strong><?= h($it['item_name']) ?></strong> <small class="muted"><?= h($it['item_code']) ?> ／ 内訳 <?= count($grp['units']) ?> 件</small></td>
       <td class="num" data-label="前回合計"><?= $grp['prev_total'] === null ? '<span class="muted">–</span>' : h($grp['prev_total']) ?></td>
       <td class="num" data-label="今回合計"><strong class="item-total" data-item="<?= $iid ?>"><?= $it['count_quantity'] === null ? '–' : h($it['count_quantity']) ?></strong></td>
-      <td colspan="4" data-label=""></td>
+      <td colspan="2" data-label=""></td>
     </tr>
     <?php foreach ($grp['units'] as $u): $uid = (int)$u['id']; $isUnit = $u['management_no'] !== null && $u['management_no'] !== ''; $n++; ?>
     <tr class="entry-row <?= $u['counted_quantity'] === null ? 'unentered' : 'entered' ?> <?= $u['diff'] ? 'has-diff' : '' ?> <?= (int)$u['is_active'] ? '' : 'row-inactive' ?>" data-unit="<?= $uid ?>" data-item="<?= $iid ?>" data-cat="<?= $iid ?>" data-prev="<?= h($u['prev_quantity']) ?>" data-text="<?= h(mb_strtolower(($u['name'] ?? '') . ' ' . ($u['management_no'] ?? '') . ' ' . $it['item_name'])) ?>">
@@ -104,21 +112,12 @@
       </td>
       <td class="num diff-cell <?= $u['diff'] === null ? '' : ($u['diff'] > 0 ? 'diff-plus' : ($u['diff'] < 0 ? 'diff-minus' : '')) ?>" data-label="差異"><?= $u['diff'] === null ? '' : h(($u['diff'] > 0 ? '+' : '') . $u['diff']) ?></td>
       <td data-label="メモ"><?php if ($editable): ?><input type="text" name="unotes[<?= $uid ?>]" value="<?= h($u['result_notes']) ?>" class="w-notes" placeholder="この棚卸だけのメモ"><?php else: ?><?= nl2br(h($u['result_notes'])) ?><?php endif; ?></td>
-      <td class="small counted-cell" data-label="担当 / 日時"><?= $u['result_id'] ? h($u['result_by']) . '<br>' . h(fmt_datetime($u['result_at'])) : '' ?></td>
-      <td class="nowrap row-action" data-label="">
-        <?php if ($editable): ?>
-          <button type="submit" name="save_unit" value="<?= $uid ?>" class="btn btn-sm btn-primary row-save" data-unit="<?= $uid ?>">確定</button>
-          <span class="save-state <?= $u['counted_quantity'] === null ? '' : 'saved' ?>" data-unit="<?= $uid ?>"><?= $u['counted_quantity'] === null ? '' : '✓ 保存済' ?></span>
-        <?php else: ?>
-          <?= $u['counted_quantity'] === null ? '<span class="muted">未入力</span>' : '<span class="badge badge-on">済</span>' ?>
-        <?php endif; ?>
-      </td>
     </tr>
     <?php endforeach; ?>
   <?php endforeach; ?>
   </tbody>
 </table></div>
 <?php if ($editable): ?>
-  <div class="form-actions"><button type="submit" class="btn" id="save-all">表示中の行をまとめて保存</button> <span class="muted">通常は各行の「確定」で保存してください</span></div>
 </form>
 <?php endif; ?>
+<div class="form-actions bottom-actions"><?php $actionButtons(); ?></div>

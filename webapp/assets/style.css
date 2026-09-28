@@ -16,7 +16,7 @@ section { margin-top: 8px; }
 .small { font-size: 12px; }
 .pre { white-space: pre-wrap; }
 .nowrap { white-space: nowrap; }
-.num { text-align: right; }
+.num { text-align: left; }
 .req { color: var(--danger); font-size: 11px; margin-left: 4px; }
 .hint { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
 
@@ -85,12 +85,13 @@ textarea { width: 100%; resize: vertical; }
 .table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); font-size: 13px; }
 .table th, .table td { border-bottom: 1px solid var(--line); padding: 6px 8px; vertical-align: top; text-align: left; }
 .table th { background: var(--head); font-weight: 600; white-space: nowrap; position: sticky; top: 0; z-index: 1; }
-.table th.num { text-align: right; }
+.table th.num { text-align: left; }
+.bottom-actions { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap; }
 .table tbody tr:hover { background: #f7f9fc; }
 .table .notes-cell { max-width: 320px; white-space: pre-wrap; word-break: break-all; font-size: 12px; }
 .row-inactive { color: var(--muted); background: #fafafa; }
 .table-entry td { vertical-align: middle; }
-.qty-input { width: 70px; text-align: right; }
+.qty-input { width: 70px; text-align: left; }
 .unit-list { margin-top: 4px; display: flex; flex-direction: column; gap: 2px; }
 .unit-row { display: flex; gap: 10px; align-items: center; font-size: 12px; background: #f3f6fb; padding: 3px 6px; border-radius: 3px; }
 .unit-row label { display: inline-flex; align-items: center; gap: 2px; }

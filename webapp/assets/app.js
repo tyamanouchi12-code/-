@@ -47,10 +47,7 @@
     if (d < 0) { cell.classList.add('diff-minus'); }
     if (d !== 0) { row.classList.add('has-diff'); }
   }
-  function markDirty(row) {
-    var st = row.querySelector('.save-state');
-    if (st) { st.textContent = '未保存'; st.classList.remove('saved'); st.classList.add('dirty'); }
-  }
+  function markDirty(row) { /* 行ごとの保存表示は廃止 */ }
   function setEntered(row, on) {
     row.classList.toggle('unentered', !on); row.classList.toggle('entered', on);
   }
@@ -79,24 +76,25 @@
     });
   });
 
-  // 保存済みの数量(集計用)
-  var savedQty = {};
-  rows.forEach(function (row) {
-    var inp = row.querySelector('.qty-input'), strong = row.querySelector('td[data-label="今回"] strong');
-    var v = '';
-    if (inp) { v = inp.value; }
-    else if (row.querySelector('.unit-radios')) { var c = row.querySelector('.unit-radios input:checked'); v = c ? (c.value === 'present' ? '1' : (c.value === 'absent' ? '0' : '')) : ''; }
-    else if (strong) { v = strong.textContent; }
-    else { var b = row.querySelector('.badge-unit-present'); v = b ? '1' : (row.querySelector('.badge-unit-absent') ? '0' : ''); }
-    savedQty[row.getAttribute('data-unit')] = /^\d+$/.test(v) ? parseInt(v, 10) : null;
-  });
+  // 入力中の値で集計(品目合計・カード)を更新
+  function currentQty(row) {
+    var inp = row.querySelector('.qty-input');
+    if (inp) { return /^\d+$/.test(inp.value) ? parseInt(inp.value, 10) : null; }
+    var c = row.querySelector('.unit-radios input:checked');
+    if (c) { return c.value === 'present' ? 1 : (c.value === 'absent' ? 0 : null); }
+    var strong = row.querySelector('td[data-label="今回"] strong');
+    if (strong) { return /^\d+$/.test(strong.textContent) ? parseInt(strong.textContent, 10) : null; }
+    if (row.querySelector('.badge-unit-present')) { return 1; }
+    if (row.querySelector('.badge-unit-absent')) { return 0; }
+    return null;
+  }
   function refreshTotals() {
     var entered = 0, total = 0, byItem = {};
     rows.forEach(function (row) {
       var item = row.getAttribute('data-item');
       byItem[item] = byItem[item] || { entered: 0, total: 0 };
-      var q = savedQty[row.getAttribute('data-unit')];
-      if (q !== null && q !== undefined) { entered++; total += q; byItem[item].entered++; byItem[item].total += q; }
+      var q = currentQty(row);
+      if (q !== null) { entered++; total += q; byItem[item].entered++; byItem[item].total += q; }
     });
     var se = document.getElementById('sum-entered'), st = document.getElementById('sum-total');
     if (se) { se.textContent = entered; }
@@ -110,54 +108,24 @@
     });
   }
 
-  function collectRow(row) {
-    var data = new FormData();
-    data.append('_token', form.querySelector('input[name=_token]').value);
-    data.append('ajax', '1');
-    data.append('save_unit', row.getAttribute('data-unit'));
-    row.querySelectorAll('input, select').forEach(function (el) {
-      if (!el.name) { return; }
-      if (el.type === 'radio' && !el.checked) { return; }
-      data.append(el.name, el.value);
-    });
-    return data;
-  }
+  entryTable.addEventListener('input', refreshTotals);
+  entryTable.addEventListener('change', refreshTotals);
+
+  // Enter キーで次の数量欄へ移動(フォーム送信を防ぐ)
   if (form) {
-    entryTable.querySelectorAll('.row-save').forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        if (!window.fetch || !window.FormData) { return; }
-        e.preventDefault();
-        var row = btn.closest('tr');
-        var uid = row.getAttribute('data-unit');
-        var st = row.querySelector('.save-state');
-        btn.disabled = true; st.textContent = '保存中…'; st.classList.remove('saved', 'dirty', 'error');
-        fetch(form.getAttribute('action'), { method: 'POST', body: collectRow(row), credentials: 'same-origin' })
-          .then(function (r) { return r.json(); })
-          .then(function (res) {
-            btn.disabled = false;
-            if (!res.ok) { st.textContent = '✕ ' + res.message; st.classList.add('error'); window.alert(res.message); return; }
-            var info = res.units && res.units[uid];
-            st.textContent = '✓ 保存済'; st.classList.add('saved');
-            if (info) {
-              savedQty[uid] = (info.qty === null || info.qty === undefined) ? null : parseInt(info.qty, 10);
-              var cc = row.querySelector('.counted-cell');
-              cc.innerHTML = '';
-              if (info.by) { cc.appendChild(document.createTextNode(info.by)); }
-              if (info.at) { cc.appendChild(document.createElement('br')); cc.appendChild(document.createTextNode(info.at)); }
-            }
-            refreshTotals();
-            var idx = rows.indexOf(row);
-            for (var j = idx + 1; j < rows.length; j++) {
-              if (rows[j].style.display !== 'none') { var n = rows[j].querySelector('.qty-input'); if (n) { n.focus(); n.select(); } break; }
-            }
-          })
-          .catch(function () { btn.disabled = false; st.textContent = '✕ 通信エラー'; st.classList.add('error'); });
+    var qtyInputs = Array.prototype.slice.call(entryTable.querySelectorAll('.qty-input'));
+    qtyInputs.forEach(function (inp, i) {
+      inp.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          for (var j = i + 1; j < qtyInputs.length; j++) {
+            if (qtyInputs[j].closest('tr').style.display !== 'none') { qtyInputs[j].focus(); qtyInputs[j].select(); break; }
+          }
+        }
       });
     });
-    entryTable.querySelectorAll('.qty-input, input[name^="unotes"]').forEach(function (inp) {
-      inp.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') { e.preventDefault(); inp.closest('tr').querySelector('.row-save').click(); }
-      });
+    entryTable.querySelectorAll('input[name^="unotes"]').forEach(function (inp) {
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); } });
     });
   }
 
