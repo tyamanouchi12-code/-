@@ -306,25 +306,3 @@
   }
 })();
 
-// ---- 品目一覧: 内訳の開閉 ----
-(function () {
-  'use strict';
-  var toggles = document.querySelectorAll('.unit-toggle');
-  if (!toggles.length) { return; }
-  function setOpen(btn, open) {
-    var rows = document.querySelector('tr.unit-rows[data-item="' + btn.getAttribute('data-item') + '"]');
-    rows.hidden = !open;
-    btn.textContent = open ? '▼' : '▶';
-    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-  }
-  toggles.forEach(function (btn) {
-    btn.addEventListener('click', function () { setOpen(btn, btn.getAttribute('aria-expanded') !== 'true'); });
-  });
-  var all = document.getElementById('toggle-all-units');
-  if (all) {
-    all.addEventListener('click', function () {
-      var anyClosed = Array.prototype.some.call(toggles, function (b) { return b.getAttribute('aria-expanded') !== 'true'; });
-      toggles.forEach(function (b) { setOpen(b, anyClosed); });
-    });
-  }
-})();

@@ -186,8 +186,8 @@ tr.entry-row.entered .item-name { }
 .table-units td { padding: 4px; }
 
 tr.item-head td { background: #eef2f8; font-size: 13px; }
-tr.unit-rows > td { background: #fafbfd; padding: 6px 8px 10px 40px; }
-.table-inner.table-cards { margin: 0; width: 100%; }
+tr.item-head .item-link { color: inherit; }
+.table-items tr.unit-line td:first-child { padding-left: 24px; }
 .unit-radios { display: inline-flex; gap: 8px; white-space: nowrap; }
 .unit-radios label { display: inline-flex; align-items: center; gap: 2px; }
 .form-grid.wide { max-width: none; }
@@ -241,9 +241,8 @@ tr.unit-rows > td { background: #fafbfd; padding: 6px 8px 10px 40px; }
   .table-cards .w-notes { width: 100%; }
   .table-cards .notes-cell, .table-cards .checkout-cell { max-width: none; }
   .table-cards .unit-list { width: 100%; }
-  tr.unit-rows > td { padding: 4px 0 0; }
   .table-cards tr.item-head { background: #eef2f8; }
-  .table-cards tr.unit-rows { border: none; padding: 0; background: transparent; }
+  .table-items tr.unit-line td:first-child { padding-left: 0; }
   .table-catsum { min-width: 0; }
   .table-catsum th:nth-child(5), .table-catsum td:nth-child(5) { display: none; }   /* 前回合計は省略 */
   .cards-3 { grid-template-columns: 1fr; }

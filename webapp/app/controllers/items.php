@@ -38,7 +38,6 @@ if ($page === 'items') {
         'location'  => input_int('location', $_GET),
         'condition' => input_str('condition', $_GET, 20),
         'active'    => input_str('active', $_GET, 5) ?? '1',
-        'expand'    => input_str('expand', $_GET, 3),
     ];
     $where = [];
     $params = [];
@@ -76,7 +75,7 @@ if ($page === 'items') {
     $unitStock = unit_stock_summary($allUnitIds);
     $latest = latest_confirmed_count();
     render('items/list', ['title' => '品目一覧', 'items' => $items, 'unitsByItem' => $unitsByItem, 'f' => $f, 'latest' => $latest,
-                          'stock' => $stock, 'unitStock' => $unitStock, 'expandAll' => $filtering || $f['expand'] === '1'] + item_masters());
+                          'stock' => $stock, 'unitStock' => $unitStock] + item_masters());
 }
 
 // ---------------------------------------------------------------- 詳細
