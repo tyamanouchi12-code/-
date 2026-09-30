@@ -45,5 +45,8 @@
 
   <div class="span2 form-actions">
     <button type="submit" class="btn btn-primary">保存</button>
+    <?php if ($item['id'] && can('item.deactivate')): ?>
+      <button type="submit" class="btn btn-danger" formaction="<?= h(url('item', ['action' => 'delete'])) ?>" formnovalidate data-confirm="このカテゴリを品名ごと削除します。棚卸結果や持ち出し記録のある品名がある場合は削除できません。よろしいですか?">削除</button>
+    <?php endif; ?>
   </div>
 </form>

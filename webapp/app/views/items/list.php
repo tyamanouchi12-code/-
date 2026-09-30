@@ -26,7 +26,7 @@
       <td class="num" data-label="現在庫(合計)"><?= $s['current'] === null ? '<span class="muted">–</span>' : '<strong>' . h($s['current']) . '</strong>' ?></td>
       <td class="checkout-cell" data-label="持ち出し中"><?= $s['open_qty'] ? '<span class="badge badge-out">' . h($s['open_qty']) . ' 件</span>' : '' ?></td>
       <td class="notes-cell" data-label="備考"><?= nl2br(h($i['notes'])) ?></td>
-      <td class="nowrap" data-label=""><a class="btn btn-sm" href="<?= h(url('item', ['action' => 'edit', 'id' => $iid])) ?>">編集・品名追加</a></td>
+      <td class="nowrap" data-label=""><a class="btn btn-sm" href="<?= h(url('item', ['action' => 'edit', 'id' => $iid])) ?>">編集・品名追加</a><?php if (can('item.deactivate')): ?> <form method="post" action="<?= h(url('item', ['action' => 'delete'])) ?>" class="inline" data-confirm="カテゴリ「<?= h($i['item_name']) ?>」を削除します(品名 <?= count($units) ?> 件も一緒に削除されます)。棚卸結果や持ち出し記録のある品名がある場合は削除できません。よろしいですか?"><?= csrf_field() ?><input type="hidden" name="id" value="<?= h($iid) ?>"><button type="submit" class="btn btn-sm btn-danger">削除</button></form><?php endif; ?></td>
     </tr>
     <?php if (!$units): ?>
     <tr class="unit-line"><td colspan="9" class="muted" data-label="">品名はありません。「編集・品名追加」から追加できます。</td></tr>

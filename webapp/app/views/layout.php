@@ -29,8 +29,8 @@
   </div>
 </header>
 <main class="container">
-  <?php foreach (flash_pull() as $f): ?>
-    <div class="flash flash-<?= h($f['type']) ?>"><?= nl2br(h($f['message'])) ?></div>
+  <?php foreach (flash_pull() as $flashMsg): ?>
+    <div class="flash flash-<?= h($flashMsg["type"]) ?>"><?= nl2br(h($flashMsg["message"])) ?></div>
   <?php endforeach; ?>
   <?php if (!empty($errors ?? [])): ?>
     <div class="flash flash-error"><ul><?php foreach ($errors as $e): ?><li><?= h($e) ?></li><?php endforeach; ?></ul></div>

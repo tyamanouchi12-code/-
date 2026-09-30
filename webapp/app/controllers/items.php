@@ -127,9 +127,12 @@ if ($page === 'item' && ($action === 'new' || $action === 'edit')) {
 function item_delete_blockers(int $itemId): array
 {
     $b = [];
-    $n = (int)db_val('SELECT COUNT(*) FROM inventory_units WHERE item_id = ?', [$itemId]);
+    // 品名は履歴が無ければカテゴリと一緒に削除できる。履歴(棚卸結果・持ち出し記録)のある品名があれば不可
+    $n = (int)db_val('SELECT COUNT(DISTINCT u.id) FROM inventory_units u
+                      WHERE u.item_id = ? AND (EXISTS (SELECT 1 FROM inventory_count_unit_results r WHERE r.unit_id = u.id AND r.counted_quantity IS NOT NULL)
+                                             OR EXISTS (SELECT 1 FROM item_checkouts c WHERE c.unit_id = u.id))', [$itemId]);
     if ($n > 0) {
-        $b[] = "品名が {$n} 件あります";
+        $b[] = "棚卸結果や持ち出し記録のある品名が {$n} 件あります";
     }
     $n = (int)db_val('SELECT COUNT(*) FROM inventory_count_details WHERE item_id = ? AND count_quantity IS NOT NULL', [$itemId]);
     if ($n > 0) {
@@ -289,15 +292,18 @@ if ($page === 'item' && $action === 'delete' && $_SERVER['REQUEST_METHOD'] === '
     $item = item_load((int)input_int('id'));
     $blockers = item_delete_blockers((int)$item['id']);
     if ($blockers) {
-        flash_set('error', 'このカテゴリは削除できません(' . implode('、', $blockers) . ')。品名を先に削除するか、「無効にする」を使ってください。');
+        flash_set('error', 'このカテゴリは削除できません(' . implode('、', $blockers) . ')。履歴を残したまま使わなくする場合は「無効にする」を使ってください。');
         redirect('item', ['id' => $item['id']]);
     }
     $pdo = db();
     $pdo->beginTransaction();
+    $unitCount = (int)db_val('SELECT COUNT(*) FROM inventory_units WHERE item_id = ?', [$item['id']]);
+    db_exec('DELETE r FROM inventory_count_unit_results r JOIN inventory_units u ON u.id = r.unit_id WHERE u.item_id = ?', [$item['id']]);   // 数量未入力の空結果のみ
+    db_exec('DELETE FROM inventory_units WHERE item_id = ?', [$item['id']]);
     db_exec('DELETE FROM inventory_count_details WHERE item_id = ?', [$item['id']]);   // 数量 NULL の空明細のみ
     db_exec('DELETE FROM inventory_items WHERE id = ?', [$item['id']]);
     $pdo->commit();
-    flash_set('success', 'カテゴリ「' . $item['item_name'] . '」を削除しました。');
+    flash_set('success', 'カテゴリ「' . $item['item_name'] . '」を削除しました。' . ($unitCount ? "(品名 {$unitCount} 件も削除)" : ''));
     redirect('items');
 }
 

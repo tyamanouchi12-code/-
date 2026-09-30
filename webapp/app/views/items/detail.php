@@ -8,12 +8,11 @@
       <?= csrf_field() ?><input type="hidden" name="id" value="<?= h($item['id']) ?>">
       <button type="submit" class="btn"><?= (int)$item['is_active'] ? '無効にする' : '再有効化' ?></button>
     </form>
-    <?php if (empty($deleteBlockers)): ?>
-    <form method="post" action="<?= h(url('item', ['action' => 'delete'])) ?>" class="inline" data-confirm="このカテゴリを削除します。元に戻せません。よろしいですか?">
+    <form method="post" action="<?= h(url('item', ['action' => 'delete'])) ?>" class="inline" data-confirm="このカテゴリを品名ごと削除します。元に戻せません。よろしいですか?">
       <?= csrf_field() ?><input type="hidden" name="id" value="<?= h($item['id']) ?>">
       <button type="submit" class="btn btn-danger">削除</button>
     </form>
-    <?php else: ?><span class="muted small">削除は品名・履歴が無い場合のみ(<?= h(implode('、', $deleteBlockers)) ?>)</span><?php endif; ?>
+    <?php if (!empty($deleteBlockers)): ?><span class="muted small">※削除できません(<?= h(implode('、', $deleteBlockers)) ?>)。使わなくする場合は「無効にする」</span><?php endif; ?>
     <?php endif; ?>
     <a class="btn btn-ghost" href="<?= h(url('items')) ?>">戻る</a>
   </div>
