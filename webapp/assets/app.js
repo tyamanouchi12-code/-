@@ -96,9 +96,10 @@
       var q = currentQty(row);
       if (q !== null) { entered++; total += q; byItem[item].entered++; byItem[item].total += q; }
     });
-    var se = document.getElementById('sum-entered'), st = document.getElementById('sum-total');
+    var se = document.getElementById('sum-entered'), st = document.getElementById('sum-total'), sc = document.getElementById('sum-checked');
     if (se) { se.textContent = entered; }
     if (st) { st.textContent = total; }
+    if (sc) { sc.textContent = entryTable.querySelectorAll('.check-input:checked').length; }
     Object.keys(byItem).forEach(function (item) {
       var e = document.querySelector('.cat-entered[data-cat="' + item + '"]'), t = document.querySelector('.cat-total[data-cat="' + item + '"]');
       var h = entryTable.querySelector('.item-total[data-item="' + item + '"]');
@@ -137,6 +138,7 @@
     var q = (document.getElementById('quick-filter').value || '').toLowerCase().trim();
     var onlyUn = document.getElementById('only-unentered').checked;
     var onlyDiff = document.getElementById('only-diff').checked;
+    var onlyUnchecked = document.getElementById('only-unchecked') && document.getElementById('only-unchecked').checked;
     var shown = 0, visibleItems = {};
     rows.forEach(function (row) {
       var show = true;
@@ -144,6 +146,7 @@
       if (q && row.getAttribute('data-text').indexOf(q) === -1) { show = false; }
       if (onlyUn && !row.classList.contains('unentered')) { show = false; }
       if (onlyDiff && !row.classList.contains('has-diff')) { show = false; }
+      if (onlyUnchecked) { var cb = row.querySelector('.check-input'); if (cb ? cb.checked : row.classList.contains('checked-row')) { show = false; } }
       row.style.display = show ? '' : 'none';
       if (show) { shown++; visibleItems[row.getAttribute('data-item')] = true; }
     });
@@ -173,10 +176,11 @@
       document.getElementById('quick-filter').value = '';
       document.getElementById('only-unentered').checked = false;
       document.getElementById('only-diff').checked = false;
+      if (document.getElementById('only-unchecked')) { document.getElementById('only-unchecked').checked = false; }
       applyFilter();
     });
   }
-  ['quick-filter', 'only-unentered', 'only-diff'].forEach(function (id) {
+  ['quick-filter', 'only-unentered', 'only-diff', 'only-unchecked'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) { el.addEventListener(id === 'quick-filter' ? 'input' : 'change', applyFilter); }
   });
@@ -189,7 +193,6 @@
   'use strict';
   var form = document.getElementById('checkout-form');
   if (!form) { return; }
-  var search = document.getElementById('item-search');
   var itemSel = document.getElementById('item-select');
   var unitSel = document.getElementById('unit-select');
   var qtyBox = document.getElementById('qty-box');
@@ -200,7 +203,7 @@
 
   function rebuildUnits() {
     var itemId = itemSel.value;
-    var q = (search.value || '').toLowerCase().trim();
+    var q = '';
     var current = unitSel.value;
     while (unitSel.options.length) { unitSel.remove(0); }
     placeholder.textContent = itemId ? '選択してください' : '先に品目を選択してください';
@@ -224,8 +227,7 @@
     // 内訳を選んだら品目も合わせる(検索から選んだ場合)
     if (opt && opt.value && itemSel.value !== opt.getAttribute('data-item')) { itemSel.value = opt.getAttribute('data-item'); }
   }
-  search.addEventListener('input', function () { if (search.value.trim()) { itemSel.value = ''; } rebuildUnits(); });
-  itemSel.addEventListener('change', function () { search.value = ''; rebuildUnits(); });
+  itemSel.addEventListener('change', rebuildUnits);
   unitSel.addEventListener('change', refreshQty);
   userSel.addEventListener('change', function () { otherBox.hidden = userSel.value !== '_other'; });
   form.addEventListener('submit', function () {

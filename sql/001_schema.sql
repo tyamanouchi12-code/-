@@ -216,6 +216,7 @@ CREATE TABLE inventory_count_unit_results (
   count_id          INT           NOT NULL,
   unit_id           INT           NOT NULL,
   result            VARCHAR(20)   NOT NULL DEFAULT 'unchecked',      -- 'unchecked'(未確認) / 'present'(有) / 'absent'(無)
+  is_checked        TINYINT(1)    NOT NULL DEFAULT 0,                -- 確認チェック(1=済)
   notes             TEXT          NULL,
   created_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -16,17 +16,13 @@
     <legend>品名(実物の種類・個体)</legend>
     <p class="hint">1行が「数える単位」です。マウスやケーブルのように個数で数える物は種類ごとに1行(状態が新品と中古で分かれる場合は2行)、PCや無線APのように1台ずつ管理する物は<strong>管理Noを入れて1台1行</strong>にします。空の行は無視されます。<?php if ($item['id']): ?>登録済みの品名を無効にするには、行の「編集」から行います。<?php endif; ?></p>
     <div class="table-wrap"><table class="table table-units" id="unit-table">
-      <thead><tr><th>品名 <span class="req">必須</span></th><th>状態</th><th>管理No</th><th>シリアル番号</th><th>IPアドレス</th><th>メーカー</th><th>型番</th><th>保管場所</th><th>備考</th><th></th></tr></thead>
+      <thead><tr><th>品名 <span class="req">必須</span></th><th>状態</th><th>管理No</th><th>保管場所</th><th>備考</th><th></th></tr></thead>
       <tbody>
       <?php $ri = 0; foreach (($units ?? []) as $u): ?>
         <tr class="unit-input-row">
           <td><input type="hidden" name="units[<?= $ri ?>][id]" value="<?= h($u['id'] ?? '') ?>"><input type="text" name="units[<?= $ri ?>][name]" value="<?= h($u['name'] ?? '') ?>" maxlength="200" class="w-name"></td>
           <td><select name="units[<?= $ri ?>][condition_code]"><option value="">(未設定)</option><?php foreach ($conditions as $c): ?><option value="<?= h($c['code']) ?>" <?= ($u['condition_code'] ?? null) === $c['code'] ? 'selected' : '' ?>><?= h($c['name']) ?></option><?php endforeach; ?></select></td>
           <td><input type="text" name="units[<?= $ri ?>][management_no]" value="<?= h($u['management_no'] ?? '') ?>" maxlength="50" placeholder="1台ずつ管理する物のみ"></td>
-          <td><input type="text" name="units[<?= $ri ?>][serial_number]" value="<?= h($u['serial_number'] ?? '') ?>" maxlength="100"></td>
-          <td><input type="text" name="units[<?= $ri ?>][ip_address]" value="<?= h($u['ip_address'] ?? '') ?>" maxlength="100"></td>
-          <td><input type="text" name="units[<?= $ri ?>][manufacturer]" value="<?= h($u['manufacturer'] ?? '') ?>" maxlength="100"></td>
-          <td><input type="text" name="units[<?= $ri ?>][model_number]" value="<?= h($u['model_number'] ?? '') ?>" maxlength="100"></td>
           <td><select name="units[<?= $ri ?>][location_id]"><option value="">(カテゴリと同じ)</option><?php foreach ($locations as $l): ?><option value="<?= h($l['id']) ?>" <?= ($u['location_id'] ?? null) == $l['id'] ? 'selected' : '' ?>><?= h($l['name']) ?></option><?php endforeach; ?></select></td>
           <td><input type="text" name="units[<?= $ri ?>][notes]" value="<?= h($u['notes'] ?? '') ?>" maxlength="500"><input type="hidden" name="units[<?= $ri ?>][status]" value="<?= h($u['status'] ?? 'in_stock') ?>"></td>
           <td class="nowrap"><?= !empty($u['id']) ? '<a class="small" href="' . h(url('unit', ['action' => 'edit', 'id' => $u['id']])) . '">編集</a>' : '<button type="button" class="btn btn-sm unit-remove">削除</button>' ?></td>
@@ -39,10 +35,6 @@
         <td><input type="hidden" name="units[__i__][id]" value=""><input type="text" name="units[__i__][name]" maxlength="200" class="w-name"></td>
         <td><select name="units[__i__][condition_code]"><option value="">(未設定)</option><?php foreach ($conditions as $c): ?><option value="<?= h($c['code']) ?>"><?= h($c['name']) ?></option><?php endforeach; ?></select></td>
         <td><input type="text" name="units[__i__][management_no]" maxlength="50" placeholder="1台ずつ管理する物のみ"></td>
-        <td><input type="text" name="units[__i__][serial_number]" maxlength="100"></td>
-        <td><input type="text" name="units[__i__][ip_address]" maxlength="100"></td>
-        <td><input type="text" name="units[__i__][manufacturer]" maxlength="100"></td>
-        <td><input type="text" name="units[__i__][model_number]" maxlength="100"></td>
         <td><select name="units[__i__][location_id]"><option value="">(カテゴリと同じ)</option><?php foreach ($locations as $l): ?><option value="<?= h($l['id']) ?>"><?= h($l['name']) ?></option><?php endforeach; ?></select></td>
         <td><input type="text" name="units[__i__][notes]" maxlength="500"><input type="hidden" name="units[__i__][status]" value="in_stock"></td>
         <td class="nowrap"><button type="button" class="btn btn-sm unit-remove">削除</button></td>

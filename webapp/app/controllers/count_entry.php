@@ -39,7 +39,7 @@ foreach ($items as $it) {
 $unitsByItem = [];
 $unitById = [];
 foreach (db_all("SELECT u.*, COALESCE(l2.name, l1.name) AS location_name, COALESCE(u.location_id, i.location_id) AS eff_location_id,
-                        r.id AS result_id, r.counted_quantity, r.result, r.notes AS result_notes, r.updated_by AS result_by, r.updated_at AS result_at
+                        r.id AS result_id, r.counted_quantity, r.result, r.is_checked, r.notes AS result_notes, r.updated_by AS result_by, r.updated_at AS result_at
                  FROM inventory_units u
                  JOIN inventory_items i ON i.id = u.item_id
                  LEFT JOIN locations l1 ON l1.id = i.location_id LEFT JOIN locations l2 ON l2.id = u.location_id
@@ -79,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
     $qtyIn = $_POST['qty'] ?? [];
     $unitIn = $_POST['unit'] ?? [];
     $notesIn = $_POST['unotes'] ?? [];
+    $checkedIn = $_POST['checked'] ?? [];
     $touchedIn = $_POST['touched'] ?? [];
     $pdo = db();
     $pdo->beginTransaction();
@@ -109,15 +110,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
         }
         $notes = isset($notesIn[$uid]) && is_string($notesIn[$uid]) ? trim($notesIn[$uid]) : '';
         $notes = $notes === '' ? null : mb_substr($notes, 0, 2000);
-        $changed = ((string)$u['counted_quantity'] !== (string)$qty) || (string)$u['result_notes'] !== (string)$notes || ($u['result'] ?? 'unchecked') !== $res;
+        $checked = isset($checkedIn[$uid]) ? 1 : 0;
+        $changed = ((string)$u['counted_quantity'] !== (string)$qty) || (string)$u['result_notes'] !== (string)$notes || ($u['result'] ?? 'unchecked') !== $res
+                   || (int)($u['is_checked'] ?? 0) !== $checked;
         if ($u['result_id']) {
             if ($changed) {
-                db_exec('UPDATE inventory_count_unit_results SET result = ?, counted_quantity = ?, notes = ?, updated_by = ?, updated_at = NOW() WHERE id = ?',
-                    [$res, $qty, $notes, actor_name(), $u['result_id']]);
+                db_exec('UPDATE inventory_count_unit_results SET result = ?, counted_quantity = ?, is_checked = ?, notes = ?, updated_by = ?, updated_at = NOW() WHERE id = ?',
+                    [$res, $qty, $checked, $notes, actor_name(), $u['result_id']]);
             }
-        } elseif ($qty !== null || $notes !== null) {
-            db_exec('INSERT INTO inventory_count_unit_results (count_id, unit_id, result, counted_quantity, notes, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [$count['id'], $uid, $res, $qty, $notes, actor_name(), actor_name()]);
+        } elseif ($qty !== null || $notes !== null || $checked) {
+            db_exec('INSERT INTO inventory_count_unit_results (count_id, unit_id, result, counted_quantity, is_checked, notes, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [$count['id'], $uid, $res, $qty, $checked, $notes, actor_name(), actor_name()]);
             $changed = true;
         }
         if ($changed) {
@@ -179,7 +182,7 @@ foreach ($items as $it) {
 
 // 絞り込み(表示用)
 $rows = [];   // [item, units]
-$summary = ['entered' => 0, 'units' => 0, 'total' => 0, 'diff' => 0];
+$summary = ['entered' => 0, 'units' => 0, 'total' => 0, 'diff' => 0, 'checked' => 0];
 foreach ($items as $it) {
     $iid = (int)$it['id'];
     if ($itemFilter !== null && $iid !== $itemFilter) {
@@ -202,6 +205,9 @@ foreach ($items as $it) {
         }
         if ($u['diff'] !== null && $u['diff'] !== 0) {
             $summary['diff']++;
+        }
+        if ((int)($u['is_checked'] ?? 0) === 1) {
+            $summary['checked']++;
         }
     }
     unset($u);

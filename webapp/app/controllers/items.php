@@ -109,7 +109,8 @@ if ($page === 'item' && $action === '') {
         'category' => db_val('SELECT name FROM categories WHERE id = ?', [$item['category_id']]),
     ];
     render('items/detail', ['title' => 'カテゴリ詳細', 'item' => $item, 'units' => $units, 'unitStock' => $unitStock, 'history' => $history, 'unitHistory' => $unitHistory,
-                            'lookup' => $lookup, 'stock' => $stock, 'checkouts' => $checkouts, 'latestCount' => latest_confirmed_count()] + item_masters());
+                            'lookup' => $lookup, 'stock' => $stock, 'checkouts' => $checkouts, 'latestCount' => latest_confirmed_count(),
+                            'deleteBlockers' => item_delete_blockers((int)$item['id'])] + item_masters());
 }
 
 // ---------------------------------------------------------------- 登録・編集フォーム
@@ -120,6 +121,25 @@ if ($page === 'item' && ($action === 'new' || $action === 'edit')) {
     ];
     $units = $item['id'] ? item_units((int)$item['id']) : [];
     render('items/form', ['title' => $action === 'edit' ? 'カテゴリ編集' : 'カテゴリ登録', 'item' => $item, 'units' => $units, 'errors' => []] + item_masters());
+}
+
+/** カテゴリを削除してよいか(品名・棚卸結果・持ち出し記録があれば不可) */
+function item_delete_blockers(int $itemId): array
+{
+    $b = [];
+    $n = (int)db_val('SELECT COUNT(*) FROM inventory_units WHERE item_id = ?', [$itemId]);
+    if ($n > 0) {
+        $b[] = "品名が {$n} 件あります";
+    }
+    $n = (int)db_val('SELECT COUNT(*) FROM inventory_count_details WHERE item_id = ? AND count_quantity IS NOT NULL', [$itemId]);
+    if ($n > 0) {
+        $b[] = "棚卸の結果が {$n} 件あります";
+    }
+    $n = (int)db_val('SELECT COUNT(*) FROM item_checkouts WHERE item_id = ?', [$itemId]);
+    if ($n > 0) {
+        $b[] = "持ち出しの記録が {$n} 件あります";
+    }
+    return $b;
 }
 
 /** カテゴリ名に対応する categories の ID(無ければ作成) */
@@ -152,15 +172,11 @@ function item_units_from_post(array &$errors): array
             'name'           => input_str('name', $r, 200),
             'condition_code' => input_str('condition_code', $r, 20),
             'management_no'  => input_str('management_no', $r, 50),
-            'serial_number'  => input_str('serial_number', $r, 100),
-            'ip_address'     => input_str('ip_address', $r, 100),
-            'manufacturer'   => input_str('manufacturer', $r, 100),
-            'model_number'   => input_str('model_number', $r, 100),
             'status'         => input_str('status', $r, 20) ?? 'in_stock',
             'location_id'    => input_int('location_id', $r),
             'notes'          => input_str('notes', $r, 500),
         ];
-        $empty = $u['name'] === null && $u['management_no'] === null && $u['serial_number'] === null && $u['notes'] === null && $u['model_number'] === null;
+        $empty = $u['name'] === null && $u['management_no'] === null && $u['notes'] === null;
         if ($empty && $u['id'] === null) {
             continue;   // 空行
         }
@@ -188,14 +204,14 @@ function item_units_save(int $itemId, array $rows): int
     $sort = (int)db_val('SELECT COALESCE(MAX(sort_order),0) FROM inventory_units WHERE item_id = ?', [$itemId]);
     foreach ($rows as $u) {
         if ($u['id'] !== null) {
-            db_exec('UPDATE inventory_units SET name=?, condition_code=?, management_no=?, serial_number=?, ip_address=?, manufacturer=?, model_number=?, status=?, location_id=?, notes=?, updated_by=?
+            db_exec('UPDATE inventory_units SET name=?, condition_code=?, management_no=?, status=?, location_id=?, notes=?, updated_by=?
                      WHERE id=? AND item_id=?',
-                [$u['name'], $u['condition_code'], $u['management_no'], $u['serial_number'], $u['ip_address'], $u['manufacturer'], $u['model_number'], $u['status'], $u['location_id'], $u['notes'], actor_name(), $u['id'], $itemId]);
+                [$u['name'], $u['condition_code'], $u['management_no'], $u['status'], $u['location_id'], $u['notes'], actor_name(), $u['id'], $itemId]);
         } else {
             $sort += 10;
-            db_insert('INSERT INTO inventory_units (item_id, name, condition_code, management_no, serial_number, ip_address, manufacturer, model_number, status, location_id, notes, is_active, sort_order, created_by, updated_by)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)',
-                [$itemId, $u['name'], $u['condition_code'], $u['management_no'], $u['serial_number'], $u['ip_address'], $u['manufacturer'], $u['model_number'], $u['status'], $u['location_id'], $u['notes'], $sort, actor_name(), actor_name()]);
+            db_insert('INSERT INTO inventory_units (item_id, name, condition_code, management_no, status, location_id, notes, is_active, sort_order, created_by, updated_by)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)',
+                [$itemId, $u['name'], $u['condition_code'], $u['management_no'], $u['status'], $u['location_id'], $u['notes'], $sort, actor_name(), actor_name()]);
             $added++;
         }
     }
@@ -265,6 +281,24 @@ if ($page === 'item' && $action === 'toggle_active' && $_SERVER['REQUEST_METHOD'
     db_exec('UPDATE inventory_items SET is_active = ?, updated_by = ? WHERE id = ?', [$to, actor_name(), $item['id']]);
     flash_set('success', $to ? 'カテゴリを再有効化しました。' : 'カテゴリを無効にしました(棚卸履歴は残ります)。');
     redirect('item', ['id' => $item['id']]);
+}
+
+// ---------------------------------------------------------------- 削除(品名・棚卸明細・持ち出し記録が無い場合のみ)
+if ($page === 'item' && $action === 'delete' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_perm('item.deactivate');
+    $item = item_load((int)input_int('id'));
+    $blockers = item_delete_blockers((int)$item['id']);
+    if ($blockers) {
+        flash_set('error', 'このカテゴリは削除できません(' . implode('、', $blockers) . ')。品名を先に削除するか、「無効にする」を使ってください。');
+        redirect('item', ['id' => $item['id']]);
+    }
+    $pdo = db();
+    $pdo->beginTransaction();
+    db_exec('DELETE FROM inventory_count_details WHERE item_id = ?', [$item['id']]);   // 数量 NULL の空明細のみ
+    db_exec('DELETE FROM inventory_items WHERE id = ?', [$item['id']]);
+    $pdo->commit();
+    flash_set('success', 'カテゴリ「' . $item['item_name'] . '」を削除しました。');
+    redirect('items');
 }
 
 http_response_code(404);

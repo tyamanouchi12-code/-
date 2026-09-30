@@ -95,5 +95,19 @@ if ($page === 'count' && $action === 'status' && $_SERVER['REQUEST_METHOD'] === 
     redirect('count_entry', ['id' => $count['id']]);
 }
 
+// 棚卸の削除(結果ごと削除。権限: 棚卸の確定)
+if ($page === 'count' && $action === 'delete' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_perm('count.confirm');
+    $count = count_load((int)input_int('id'));
+    $pdo = db();
+    $pdo->beginTransaction();
+    db_exec('DELETE FROM inventory_count_unit_results WHERE count_id = ?', [$count['id']]);
+    db_exec('DELETE FROM inventory_count_details WHERE count_id = ?', [$count['id']]);
+    db_exec('DELETE FROM inventory_counts WHERE id = ?', [$count['id']]);
+    $pdo->commit();
+    flash_set('success', '棚卸「' . $count['count_name'] . '」を削除しました。');
+    redirect('counts');
+}
+
 http_response_code(404);
 render('error', ['title' => 'ページが見つかりません', 'message' => '不正な操作です。']);

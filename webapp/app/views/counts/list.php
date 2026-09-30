@@ -17,7 +17,7 @@
       <td class="num"><?= h($c['detail_count']) ?></td>
       <td class="num"><?= h($c['total_qty']) ?></td>
       <td><?= h($c['confirmed_by']) ?><?= $c['confirmed_at'] ? '<br><small>' . h(fmt_datetime($c['confirmed_at'])) . '</small>' : '' ?></td>
-      <td class="nowrap"><a class="btn btn-sm" href="<?= h(url('count_entry', ['id' => $c['id']])) ?>"><?= $c['status'] === 'confirmed' ? '結果' : '入力' ?></a> <a class="btn btn-sm btn-ghost" href="<?= h(url('count', ['action' => 'edit', 'id' => $c['id']])) ?>">編集</a></td>
+      <td class="nowrap"><a class="btn btn-sm" href="<?= h(url('count_entry', ['id' => $c['id']])) ?>"><?= $c['status'] === 'confirmed' ? '結果' : '入力' ?></a> <a class="btn btn-sm btn-ghost" href="<?= h(url('count', ['action' => 'edit', 'id' => $c['id']])) ?>">編集</a><?php if (can('count.confirm')): ?> <form method="post" action="<?= h(url('count', ['action' => 'delete'])) ?>" class="inline" data-confirm="棚卸「<?= h($c['count_name']) ?>」を入力結果ごと削除します。元に戻せません。よろしいですか?"><?= csrf_field() ?><input type="hidden" name="id" value="<?= h($c['id']) ?>"><button type="submit" class="btn btn-sm btn-danger">削除</button></form><?php endif; ?></td>
     </tr>
   <?php endforeach; ?>
   <?php if (!$counts): ?><tr><td colspan="11" class="muted">棚卸はまだありません。</td></tr><?php endif; ?>

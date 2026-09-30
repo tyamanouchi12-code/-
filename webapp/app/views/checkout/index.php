@@ -9,7 +9,6 @@
 <?php if ($mode === 'out'): ?>
 <form method="post" action="<?= h(url('checkout', ['action' => 'out'])) ?>" class="mobile-form" id="checkout-form">
   <?= csrf_field() ?>
-  <label>品名で探す<input type="search" id="item-search" placeholder="品名・管理No の一部を入力" autocomplete="off"></label>
   <label>カテゴリ <span class="req">必須</span>
     <select name="item_id" id="item-select" required>
       <option value="">選択してください</option>

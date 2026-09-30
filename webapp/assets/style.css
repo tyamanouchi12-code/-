@@ -194,6 +194,9 @@ tr.item-head .item-link { color: inherit; }
 .form-grid.wide { max-width: none; }
 .w-name { min-width: 180px; }
 
+tr.entry-row.checked-row td:first-child { background: #e6f4ec; }
+.check-input { width: 18px; height: 18px; }
+
 /* ===== スマートフォン対応 ===== */
 @media (max-width: 800px) {
   body { font-size: 14px; }
