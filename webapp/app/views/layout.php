@@ -13,7 +13,8 @@
     <a class="brand" href="<?= h(url('dashboard')) ?>"><?= h(APP_NAME) ?></a>
     <?php if ($me): ?>
     <nav class="nav">
-      <a href="<?= h(url('items')) ?>" class="<?= ($view ?? '') === 'items/list' || str_starts_with($view ?? '', 'items/') || str_starts_with($view ?? '', 'units/') ? 'active' : '' ?>">カテゴリ</a>
+      <a href="<?= h(url('items')) ?>" class="<?= str_starts_with($view ?? '', 'items/') || (str_starts_with($view ?? '', 'units/') && ($title ?? '') !== '品名追加') ? 'active' : '' ?>">カテゴリ</a>
+      <a href="<?= h(url('unit', ['action' => 'new'])) ?>" class="<?= ($title ?? '') === '品名追加' ? 'active' : '' ?>">品名追加</a>
       <a href="<?= h(url('counts')) ?>" class="<?= str_starts_with($view ?? '', 'counts/') ? 'active' : '' ?>">棚卸</a>
       <a href="<?= h(url('checkout')) ?>" class="<?= str_starts_with($view ?? '', 'checkout/') ? 'active' : '' ?>">持ち出し</a>
       <?php if (can('master.manage')): ?><a href="<?= h(url('masters')) ?>" class="<?= str_starts_with($view ?? '', 'masters/') ? 'active' : '' ?>">マスタ</a><?php endif; ?>
