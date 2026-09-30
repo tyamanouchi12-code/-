@@ -122,6 +122,17 @@ if ($page === 'item' && ($action === 'new' || $action === 'edit')) {
     render('items/form', ['title' => $action === 'edit' ? 'カテゴリ編集' : 'カテゴリ登録', 'item' => $item, 'units' => $units, 'errors' => []] + item_masters());
 }
 
+/** カテゴリ名に対応する categories の ID(無ければ作成) */
+function category_id_for_name(string $name): int
+{
+    $id = db_val('SELECT id FROM categories WHERE name = ?', [$name]);
+    if ($id) {
+        return (int)$id;
+    }
+    $sort = (int)db_val('SELECT COALESCE(MAX(sort_order),0) FROM categories') + 1;
+    return db_insert('INSERT INTO categories (name, sort_order, is_active) VALUES (?, ?, 1)', [$name, $sort]);
+}
+
 /** フォームの品名行を正規化して返す(空行は除外)。エラーがあれば $errors に追加 */
 function item_units_from_post(array &$errors): array
 {
@@ -197,20 +208,16 @@ if ($page === 'item' && $action === 'save' && $_SERVER['REQUEST_METHOD'] === 'PO
     $existing = $id ? item_load($id) : null;
     $v = [
         'item_name'   => input_str('item_name', null, 200),
-        'category_id' => input_int('category_id'),
         'stock_type'  => input_str('stock_type', null, 20),
         'location_id' => input_int('location_id'),
         'notes'       => input_str('notes', null, 5000),
         'sort_order'  => input_int('sort_order'),
     ];
     $errors = [];
-    if ($v['category_id'] === null) {
-        $errors[] = 'カテゴリは必須です。';
-    } elseif (!db_val('SELECT 1 FROM categories WHERE id = ?', [$v['category_id']])) {
-        $errors[] = '選択したカテゴリが存在しません。';
-    }
-    if ($v['item_name'] === null && $v['category_id'] !== null) {
-        $v['item_name'] = db_val('SELECT name FROM categories WHERE id = ?', [$v['category_id']]);   // カテゴリ名はマスタのカテゴリ名を既定にする
+    if ($v['item_name'] === null) {
+        $errors[] = 'カテゴリ名は必須です。';
+    } elseif (db_val('SELECT id FROM inventory_items WHERE item_name = ?' . ($id ? ' AND id <> ?' : ''), $id ? [$v['item_name'], $id] : [$v['item_name']])) {
+        $errors[] = '同じ名前のカテゴリがすでに登録されています。';
     }
     if (!isset(stock_type_options()[$v['stock_type']])) {
         $errors[] = '在庫区分が不正です。';
@@ -218,6 +225,8 @@ if ($page === 'item' && $action === 'save' && $_SERVER['REQUEST_METHOD'] === 'PO
     if ($v['location_id'] !== null && !db_val('SELECT 1 FROM locations WHERE id = ?', [$v['location_id']])) {
         $errors[] = '保管場所が存在しません。';
     }
+    // categories テーブルはカテゴリ名で自動同期する(画面からは扱わない)
+    $v['category_id'] = $errors ? null : category_id_for_name($v['item_name']);
     $unitRows = item_units_from_post($errors);
     if ($errors) {
         $item = array_merge($existing ?? ['id' => null, 'item_code' => '(自動採番)', 'is_active' => 1], $v, ['id' => $id]);

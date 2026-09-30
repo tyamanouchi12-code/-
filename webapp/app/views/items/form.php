@@ -7,8 +7,7 @@
   <input type="hidden" name="id" value="<?= h($item['id']) ?>">
   <label>カテゴリコード<input type="text" value="<?= h($item['item_code']) ?>" disabled></label>
   <label>表示順<input type="number" name="sort_order" value="<?= h($item['sort_order']) ?>" placeholder="未入力なら末尾"></label>
-  <label>カテゴリ(マスタから選択) <span class="req">必須</span><select name="category_id" id="category-select" required><option value="">選択してください</option><?php foreach ($categories as $c): ?><option value="<?= h($c['id']) ?>" <?= $item['category_id'] == $c['id'] ? 'selected' : '' ?>><?= h($c['name']) ?></option><?php endforeach; ?></select></label>
-  <label>カテゴリ名(表示名)<input type="text" name="item_name" id="item-name" value="<?= h($item['item_name']) ?>" maxlength="200" placeholder="空欄ならマスタのカテゴリ名"><small class="hint">空欄で保存するとマスタのカテゴリ名が入ります</small></label>
+  <label class="span2">カテゴリ名 <span class="req">必須</span><input type="text" name="item_name" id="item-name" value="<?= h($item['item_name']) ?>" maxlength="200" required placeholder="例: 電源関連"></label>
   <label>保管場所(既定)<select name="location_id"><option value="">(未設定)</option><?php foreach ($locations as $l): ?><option value="<?= h($l['id']) ?>" <?= $item['location_id'] == $l['id'] ? 'selected' : '' ?>><?= h($l['name']) ?></option><?php endforeach; ?></select><small class="hint">品名で保管場所を空にした場合に使われます</small></label>
   <label>在庫区分<select name="stock_type"><?php foreach (stock_type_options() as $k => $v): ?><option value="<?= h($k) ?>" <?= $item['stock_type'] === $k ? 'selected' : '' ?>><?= h($v) ?></option><?php endforeach; ?></select></label>
   <label class="span2">カテゴリの備考<textarea name="notes" rows="2"><?= h($item['notes']) ?></textarea></label>

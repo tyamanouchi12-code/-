@@ -19,7 +19,6 @@
 
 <div class="detail-grid">
   <dl>
-    <dt>カテゴリ</dt><dd><?= h($lookup['category']) ?: '<span class="muted">(未設定)</span>' ?></dd>
     <dt>保管場所(既定)</dt><dd><?= h($lookup['location']) ?: '<span class="muted">(未設定)</span>' ?></dd>
     <dt>在庫区分</dt><dd><?= h(stock_type_label($item['stock_type'])) ?></dd>
   </dl>

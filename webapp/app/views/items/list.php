@@ -20,7 +20,7 @@
   <tbody>
   <?php foreach ($items as $i): $iid = (int)$i['id']; $s = stock_for($stock, $iid); $units = $unitsByItem[$iid] ?? []; ?>
     <tr class="item-head <?= (int)$i['is_active'] ? '' : 'row-inactive' ?>" data-item="<?= $iid ?>">
-      <td colspan="4" data-label="カテゴリ"><a href="<?= h(url('item', ['id' => $iid])) ?>" class="item-link"><strong><?= h($i['item_name']) ?></strong></a> <small class="muted"><?= h($i['item_code']) ?> ／ 品名 <?= count($units) ?> 件</small><?= (int)$i['is_active'] ? '' : ' <span class="badge badge-off">無効</span>' ?><?= $i['category_name'] !== null && $i['category_name'] !== $i['item_name'] ? ' <small class="muted">(カテゴリ: ' . h($i['category_name']) . ')</small>' : '' ?></td>
+      <td colspan="4" data-label="カテゴリ"><a href="<?= h(url('item', ['id' => $iid])) ?>" class="item-link"><strong><?= h($i['item_name']) ?></strong></a> <small class="muted"><?= h($i['item_code']) ?> ／ 品名 <?= count($units) ?> 件</small><?= (int)$i['is_active'] ? '' : ' <span class="badge badge-off">無効</span>' ?></td>
       <td data-label="保管場所(既定)"><?= h($i['location_name']) ?></td>
       <td class="num" data-label="棚卸数(合計)"><?= $s['latest_qty'] === null ? '<span class="muted">–</span>' : h($s['latest_qty']) ?></td>
       <td class="num" data-label="現在庫(合計)"><?= $s['current'] === null ? '<span class="muted">–</span>' : '<strong>' . h($s['current']) . '</strong>' ?></td>

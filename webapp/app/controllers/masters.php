@@ -4,7 +4,6 @@ require_perm('master.manage');
 
 $types = [
     'locations'  => ['label' => '保管場所', 'table' => 'locations',  'key' => 'id',   'has_sort' => true],
-    'categories' => ['label' => 'カテゴリ', 'table' => 'categories', 'key' => 'id',   'has_sort' => true],
     'customers'  => ['label' => '客先',     'table' => 'customers',  'key' => 'id',   'has_sort' => false],
     'conditions' => ['label' => '状態',     'table' => 'conditions', 'key' => 'code', 'has_sort' => true],
 ];
@@ -69,8 +68,12 @@ $order = $def['has_sort'] ? 'sort_order, ' . $def['key'] : 'name';
 $rows = db_all("SELECT * FROM $tbl ORDER BY $order");
 // 使用件数(カテゴリでの参照数)
 $usage = [];
-$refCol = ['locations' => 'location_id', 'categories' => 'category_id', 'customers' => 'customer_id', 'conditions' => 'condition_code'][$type];
-foreach (db_all("SELECT $refCol AS k, COUNT(*) AS c FROM inventory_items WHERE $refCol IS NOT NULL GROUP BY $refCol") as $r) {
+$refCol = ['locations' => 'location_id', 'customers' => 'customer_id', 'conditions' => 'condition_code'][$type];
+$usageSql = $type === 'locations'
+    ? "SELECT k, SUM(c) AS c FROM (SELECT location_id AS k, COUNT(*) AS c FROM inventory_items WHERE location_id IS NOT NULL GROUP BY location_id
+                                  UNION ALL SELECT location_id, COUNT(*) FROM inventory_units WHERE location_id IS NOT NULL GROUP BY location_id) x GROUP BY k"
+    : "SELECT $refCol AS k, COUNT(*) AS c FROM inventory_units WHERE $refCol IS NOT NULL GROUP BY $refCol";
+foreach (db_all($usageSql) as $r) {
     $usage[(string)$r['k']] = (int)$r['c'];
 }
 render('masters/list', ['title' => 'マスタ管理', 'types' => $types, 'type' => $type, 'def' => $def, 'rows' => $rows, 'usage' => $usage]);
