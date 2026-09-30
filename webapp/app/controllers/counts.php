@@ -84,7 +84,7 @@ if ($page === 'count' && $action === 'status' && $_SERVER['REQUEST_METHOD'] === 
                                    WHERE u.is_active = 1 AND u.status <> 'disposed' AND i.is_active = 1
                                      AND NOT EXISTS (SELECT 1 FROM inventory_count_unit_results r WHERE r.count_id = ? AND r.unit_id = u.id AND r.counted_quantity IS NOT NULL)", [$count['id']]);
         db_exec("UPDATE inventory_counts SET status = 'confirmed', end_date = COALESCE(end_date, CURDATE()), confirmed_by = ?, confirmed_at = NOW() WHERE id = ?", [actor_name(), $count['id']]);
-        flash_set('success', '棚卸を確定しました。' . ($unentered > 0 ? "(数量未入力の内訳が {$unentered} 件あります。未入力の内訳は履歴に含まれません)" : ''));
+        flash_set('success', '棚卸を確定しました。' . ($unentered > 0 ? "(数量未入力の品名が {$unentered} 件あります。未入力の品名は履歴に含まれません)" : ''));
     } elseif ($to === 'in_progress' && $from === 'confirmed') {
         require_perm('count.confirm');
         db_exec("UPDATE inventory_counts SET status = 'in_progress', confirmed_by = NULL, confirmed_at = NULL WHERE id = ?", [$count['id']]);

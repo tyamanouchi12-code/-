@@ -9,8 +9,8 @@
 <?php if ($mode === 'out'): ?>
 <form method="post" action="<?= h(url('checkout', ['action' => 'out'])) ?>" class="mobile-form" id="checkout-form">
   <?= csrf_field() ?>
-  <label>品名で探す<input type="search" id="item-search" placeholder="内訳名(品名)・管理No の一部を入力" autocomplete="off"></label>
-  <label>品目(カテゴリ) <span class="req">必須</span>
+  <label>品名で探す<input type="search" id="item-search" placeholder="品名・管理No の一部を入力" autocomplete="off"></label>
+  <label>カテゴリ <span class="req">必須</span>
     <select name="item_id" id="item-select" required>
       <option value="">選択してください</option>
       <?php foreach ($items as $i): ?>
@@ -18,12 +18,12 @@
       <?php endforeach; ?>
     </select>
   </label>
-  <label>内訳(品名・個体) <span class="req">必須</span>
+  <label>品名(個体) <span class="req">必須</span>
     <select name="unit_id" id="unit-select" required>
-      <option value="">先に品目を選択してください</option>
+      <option value="">先にカテゴリを選択してください</option>
       <?php foreach ($units as $iid => $list): foreach ($list as $u): $isUnit = $u['management_no'] !== null && $u['management_no'] !== ''; ?>
         <option value="<?= h($u['id']) ?>" data-item="<?= h($iid) ?>" data-unit="<?= $isUnit ? '1' : '0' ?>" data-text="<?= h(mb_strtolower(($u['name'] ?? '') . ' ' . ($u['management_no'] ?? ''))) ?>" <?= ($isUnit && (int)$u['open_count']) ? 'disabled' : '' ?>>
-          <?= h($u['name'] ?? '(内訳名なし)') ?><?= $u['condition_name'] ? '(' . h($u['condition_name']) . ')' : '' ?><?= $isUnit ? ' [' . h($u['management_no']) . ']' : '' ?><?= ($isUnit && (int)$u['open_count']) ? '(持ち出し中)' : '' ?>
+          <?= h($u['name'] ?? '(品名なし)') ?><?= $u['condition_name'] ? '(' . h($u['condition_name']) . ')' : '' ?><?= $isUnit ? ' [' . h($u['management_no']) . ']' : '' ?><?= ($isUnit && (int)$u['open_count']) ? '(持ち出し中)' : '' ?>
         </option>
       <?php endforeach; endforeach; ?>
     </select>

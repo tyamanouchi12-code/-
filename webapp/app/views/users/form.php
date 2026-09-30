@@ -15,7 +15,7 @@
     <?php foreach ($perms as $code => $label): ?>
       <label class="check"><input type="checkbox" name="permissions[]" value="<?= h($code) ?>" <?= in_array($code, $user['permissions'], true) ? 'checked' : '' ?>> <?= h($label) ?></label>
     <?php endforeach; ?>
-    <small class="hint">品目・個体・棚卸の登録・編集・入力は全員が行えます。上の権限は追加の操作に必要です。</small>
+    <small class="hint">カテゴリ・品名・棚卸の登録・編集・入力は全員が行えます。上の権限は追加の操作に必要です。</small>
   </fieldset>
   <div class="span2 form-actions"><button type="submit" class="btn btn-primary">保存</button></div>
 </form>

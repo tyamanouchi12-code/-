@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
 
 $order = $def['has_sort'] ? 'sort_order, ' . $def['key'] : 'name';
 $rows = db_all("SELECT * FROM $tbl ORDER BY $order");
-// 使用件数(品目での参照数)
+// 使用件数(カテゴリでの参照数)
 $usage = [];
 $refCol = ['locations' => 'location_id', 'categories' => 'category_id', 'customers' => 'customer_id', 'conditions' => 'condition_code'][$type];
 foreach (db_all("SELECT $refCol AS k, COUNT(*) AS c FROM inventory_items WHERE $refCol IS NOT NULL GROUP BY $refCol") as $r) {

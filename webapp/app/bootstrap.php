@@ -15,7 +15,7 @@ if (is_file(APP_DIR . '/config.local.php')) {
     }
 }
 define('APP_NAME', $config['app']['name']);
-define('APP_VERSION', '2026-09-28.9');   // 画面下部に表示。アップロード漏れの確認用(更新のたびに上げる)
+define('APP_VERSION', '2026-09-30.10');   // 画面下部に表示。アップロード漏れの確認用(更新のたびに上げる)
 date_default_timezone_set($config['app']['timezone']);
 
 require APP_DIR . '/lib/db.php';
@@ -24,6 +24,7 @@ require APP_DIR . '/lib/csrf.php';
 require APP_DIR . '/lib/permissions.php';
 require APP_DIR . '/lib/auth.php';
 require APP_DIR . '/lib/stock.php';
+require APP_DIR . '/lib/inventory.php';
 
 db_configure($config['db']);
 

@@ -25,24 +25,24 @@ $actionButtons = function () use ($count, $editable) {
 
 <?php if ($editable): ?>
 <div class="flow-hint">
-  <strong>入力の流れ</strong>: 内訳ごとに今回の数量(管理Noのある物は有/無)を入れる → 「棚卸を締める」を押すと、入力内容をまとめて登録して確定します。途中でやめるときは「途中保存」を押してください。
+  <strong>入力の流れ</strong>: 品名ごとに今回の数量(管理Noのある物は有/無)を入れる → 「棚卸を締める」を押すと、入力内容をまとめて登録して確定します。途中でやめるときは「途中保存」を押してください。
 </div>
 <?php endif; ?>
 
 <div class="cards cards-3">
   <div class="card"><div class="card-label">基準日</div><div class="card-value small"><?= h(fmt_date($count['base_date'])) ?></div><div class="card-sub">期間: <?= h($count['count_period']) ?: '–' ?> / 入力日付: <?= h(fmt_date($count['entry_date'])) ?: '–' ?></div></div>
-  <div class="card"><div class="card-label">入力済み / 表示中の内訳</div><div class="card-value small"><span id="sum-entered"><?= h($summary['entered']) ?></span> / <?= h($summary['units']) ?></div><div class="card-sub">数量合計 <span id="sum-total"><?= h($summary['total']) ?></span></div></div>
+  <div class="card"><div class="card-label">入力済み / 表示中の品名</div><div class="card-value small"><span id="sum-entered"><?= h($summary['entered']) ?></span> / <?= h($summary['units']) ?></div><div class="card-sub">数量合計 <span id="sum-total"><?= h($summary['total']) ?></span></div></div>
   <div class="card"><div class="card-label">前回との差異あり</div><div class="card-value small"><?= h($summary['diff']) ?></div><div class="card-sub">前回: <?= $prevCount ? h($prevCount['count_name']) . '(' . h(fmt_date($prevCount['base_date'])) . ')' : 'なし' ?></div></div>
 </div>
 
 <section class="cat-summary">
-  <div class="page-head"><h2>品目(カテゴリ)別集計</h2><div><span class="muted">行をクリックすると、その品目の内訳だけが下の表に表示されます</span> <button type="button" class="btn btn-sm" id="cat-show-all">全件表示</button></div></div>
+  <div class="page-head"><h2>カテゴリ別集計</h2><div><span class="muted">行をクリックすると、そのカテゴリの品名だけが下の表に表示されます</span> <button type="button" class="btn btn-sm" id="cat-show-all">全件表示</button></div></div>
   <div class="table-wrap"><table class="table table-catsum" id="cat-table">
-    <thead><tr><th>品目</th><th class="num">内訳数</th><th class="num">入力済み</th><th class="num">今回合計</th><th class="num">前回合計</th><th class="num">差異</th></tr></thead>
+    <thead><tr><th>カテゴリ</th><th class="num">品名数</th><th class="num">入力済み</th><th class="num">今回合計</th><th class="num">前回合計</th><th class="num">差異</th></tr></thead>
     <tbody>
     <?php $gt = ['unit_count' => 0, 'entered' => 0, 'total' => 0, 'prev_total' => 0, 'diff' => 0]; ?>
     <?php foreach ($byItem as $g): foreach ($gt as $k => $v) { $gt[$k] += $g[$k]; } ?>
-      <tr class="cat-row <?= $itemFilter === $g['item_id'] ? 'selected' : '' ?>" data-cat="<?= h($g['item_id']) ?>" title="クリックでこの品目だけ表示">
+      <tr class="cat-row <?= $itemFilter === $g['item_id'] ? 'selected' : '' ?>" data-cat="<?= h($g['item_id']) ?>" title="クリックでこのカテゴリだけ表示">
         <td><a href="<?= h(url('count_entry', ['id' => $count['id'], 'item' => $g['item_id']])) ?>" class="cat-link"><?= h($g['name']) ?></a></td>
         <td class="num"><?= h($g['unit_count']) ?></td>
         <td class="num"><span class="cat-entered" data-cat="<?= h($g['item_id']) ?>"><?= h($g['entered']) ?></span><?= $g['entered'] < $g['unit_count'] ? ' <small class="muted">/ ' . h($g['unit_count']) . '</small>' : '' ?></td>
@@ -59,7 +59,7 @@ $actionButtons = function () use ($count, $editable) {
 <form method="get" class="filter-bar">
   <input type="hidden" name="page" value="count_entry"><input type="hidden" name="id" value="<?= h($count['id']) ?>">
   <select name="item" onchange="this.form.submit()">
-    <option value="">品目: すべて</option>
+    <option value="">カテゴリ: すべて</option>
     <?php foreach ($items as $it): ?><option value="<?= h($it['id']) ?>" <?= $itemFilter === (int)$it['id'] ? 'selected' : '' ?>><?= h($it['item_name']) ?></option><?php endforeach; ?>
   </select>
   <select name="location" onchange="this.form.submit()">
@@ -67,22 +67,22 @@ $actionButtons = function () use ($count, $editable) {
     <?php foreach ($locations as $l): ?><option value="<?= h($l['id']) ?>" <?= $locFilter === (int)$l['id'] ? 'selected' : '' ?>><?= h($l['name']) ?></option><?php endforeach; ?>
     <option value="0" <?= $locFilter === 0 ? 'selected' : '' ?>>(保管場所 未設定)</option>
   </select>
-  <input type="text" id="quick-filter" placeholder="この表の中を絞り込み(内訳名・管理No)" class="w-wide">
+  <input type="text" id="quick-filter" placeholder="この表の中を絞り込み(品名・管理No)" class="w-wide">
   <label class="inline-check"><input type="checkbox" id="only-unentered"> 未入力のみ表示</label>
   <label class="inline-check"><input type="checkbox" id="only-diff"> 差異ありのみ表示</label>
 </form>
 
-<h2 id="entry-title">内訳ごとの入力 <span class="muted" id="entry-scope"><?= $itemFilter !== null ? '(品目で絞り込み中)' : '(全件)' ?></span></h2>
+<h2 id="entry-title">品名ごとの入力 <span class="muted" id="entry-scope"><?= $itemFilter !== null ? '(カテゴリで絞り込み中)' : '(全件)' ?></span></h2>
 <?php if ($editable): ?>
 <form method="post" action="<?= h(url('count_entry', ['action' => 'save', 'id' => $count['id']] + ($locFilter !== null ? ['location' => $locFilter] : []) + ($itemFilter !== null ? ['item' => $itemFilter] : []))) ?>" id="entry-form" data-dirty-check>
   <?= csrf_field() ?>
 <?php endif; ?>
 <div class="table-wrap"><table class="table table-entry table-cards" id="entry-table">
-  <thead><tr><th>#</th><th>内訳名(品名)</th><th>状態</th><th>保管場所</th><th class="num">前回</th><th class="num">今回</th><th class="num">差異</th><th>メモ</th></tr></thead>
+  <thead><tr><th>#</th><th>品名</th><th>状態</th><th>保管場所</th><th class="num">前回</th><th class="num">今回</th><th class="num">差異</th><th>メモ</th></tr></thead>
   <tbody>
   <?php $n = 0; foreach ($rows as $grp): $it = $grp['item']; $iid = (int)$it['id']; ?>
     <tr class="item-head" data-item="<?= $iid ?>">
-      <td colspan="4" data-label="品目"><strong><?= h($it['item_name']) ?></strong> <small class="muted"><?= h($it['item_code']) ?> ／ 内訳 <?= count($grp['units']) ?> 件</small></td>
+      <td colspan="4" data-label="カテゴリ"><strong><?= h($it['item_name']) ?></strong> <small class="muted"><?= h($it['item_code']) ?> ／ 品名 <?= count($grp['units']) ?> 件</small></td>
       <td class="num" data-label="前回合計"><?= $grp['prev_total'] === null ? '<span class="muted">–</span>' : h($grp['prev_total']) ?></td>
       <td class="num" data-label="今回合計"><strong class="item-total" data-item="<?= $iid ?>"><?= $it['count_quantity'] === null ? '–' : h($it['count_quantity']) ?></strong></td>
       <td colspan="2" data-label=""></td>
@@ -90,7 +90,7 @@ $actionButtons = function () use ($count, $editable) {
     <?php foreach ($grp['units'] as $u): $uid = (int)$u['id']; $isUnit = $u['management_no'] !== null && $u['management_no'] !== ''; $n++; ?>
     <tr class="entry-row <?= $u['counted_quantity'] === null ? 'unentered' : 'entered' ?> <?= $u['diff'] ? 'has-diff' : '' ?> <?= (int)$u['is_active'] ? '' : 'row-inactive' ?>" data-unit="<?= $uid ?>" data-item="<?= $iid ?>" data-cat="<?= $iid ?>" data-prev="<?= h($u['prev_quantity']) ?>" data-text="<?= h(mb_strtolower(($u['name'] ?? '') . ' ' . ($u['management_no'] ?? '') . ' ' . $it['item_name'])) ?>">
       <td class="num" data-label="#"><?= $n ?></td>
-      <td data-label="内訳名"><span class="item-name"><?= $u['name'] === null ? '<span class="muted">(内訳名なし)</span>' : h($u['name']) ?></span><?= $isUnit ? ' <span class="badge">' . h($u['management_no']) . '</span>' : '' ?><?= (int)$u['is_active'] ? '' : ' <span class="badge badge-off">無効</span>' ?>
+      <td data-label="品名"><span class="item-name"><?= $u['name'] === null ? '<span class="muted">(品名なし)</span>' : h($u['name']) ?></span><?= $isUnit ? ' <span class="badge">' . h($u['management_no']) . '</span>' : '' ?><?= (int)$u['is_active'] ? '' : ' <span class="badge badge-off">無効</span>' ?>
         <?php if ($editable): ?><input type="hidden" name="touched[<?= $uid ?>]" value="1"><?php endif; ?></td>
       <td data-label="状態"><?= h(condition_name($u['condition_code'])) ?></td>
       <td data-label="保管場所"><?= h($u['location_name']) ?></td>

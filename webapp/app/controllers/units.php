@@ -1,12 +1,12 @@
 <?php
-// 内訳(実物の種類・個体)の編集・無効化。追加は品目編集画面から行う
+// 品名(実物の種類・個体)の編集・無効化。追加はカテゴリ編集画面から行う
 
 function unit_load(int $id): array
 {
     $u = db_row('SELECT * FROM inventory_units WHERE id = ?', [$id]);
     if (!$u) {
         http_response_code(404);
-        render('error', ['title' => '内訳が見つかりません', 'message' => '指定された内訳は存在しません。']);
+        render('error', ['title' => '品名が見つかりません', 'message' => '指定された品名は存在しません。']);
         exit;
     }
     return $u;
@@ -15,16 +15,17 @@ function unit_load(int $id): array
 $locations = db_all('SELECT * FROM locations WHERE is_active = 1 ORDER BY sort_order, id');
 $conditions = db_all('SELECT * FROM conditions WHERE is_active = 1 ORDER BY sort_order, code');
 $customers = db_all('SELECT * FROM customers WHERE is_active = 1 ORDER BY name');
+$itemsForMove = db_all('SELECT id, item_code, item_name FROM inventory_items WHERE is_active = 1 ORDER BY sort_order, id');
 
 if ($action === 'new') {
-    // 旧リンク互換: 品目編集画面へ
+    // 旧リンク互換: カテゴリ編集画面へ
     redirect('item', ['action' => 'edit', 'id' => (int)input_int('item_id', $_GET)]);
 }
 
 if ($action === 'edit') {
     $unit = unit_load((int)input_int('id', $_GET));
     $item = db_row('SELECT * FROM inventory_items WHERE id = ?', [$unit['item_id']]);
-    render('units/form', ['title' => '内訳編集', 'unit' => $unit, 'item' => $item, 'locations' => $locations, 'conditions' => $conditions, 'customers' => $customers, 'errors' => []]);
+    render('units/form', ['title' => '品名編集', 'unit' => $unit, 'item' => $item, 'locations' => $locations, 'conditions' => $conditions, 'customers' => $customers, 'itemsForMove' => $itemsForMove, 'errors' => []]);
 }
 
 if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -43,10 +44,14 @@ if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         'location_id'    => input_int('location_id'),
         'notes'          => input_str('notes', null, 500),
         'sort_order'     => input_int('sort_order'),
+        'item_id'        => input_int('item_id') ?? (int)$unit['item_id'],
     ];
     $errors = [];
+    if (!db_val('SELECT 1 FROM inventory_items WHERE id = ? AND is_active = 1', [$v['item_id']])) {
+        $errors[] = '移動先のカテゴリが存在しません。';
+    }
     if ($v['name'] === null) {
-        $errors[] = '内訳名(品名)を入力してください。';
+        $errors[] = '品名を入力してください。';
     }
     if ($v['condition_code'] !== null && !db_val('SELECT 1 FROM conditions WHERE code = ?', [$v['condition_code']])) {
         $errors[] = '状態が不正です。';
@@ -61,14 +66,21 @@ if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = '客先が存在しません。';
     }
     if ($errors) {
-        render('units/form', ['title' => '内訳編集', 'unit' => array_merge($unit, $v), 'item' => $item, 'locations' => $locations, 'conditions' => $conditions, 'customers' => $customers, 'errors' => $errors]);
+        render('units/form', ['title' => '品名編集', 'unit' => array_merge($unit, $v), 'item' => $item, 'locations' => $locations, 'conditions' => $conditions, 'customers' => $customers, 'itemsForMove' => $itemsForMove, 'errors' => $errors]);
         exit;
     }
     db_exec('UPDATE inventory_units SET name=?, condition_code=?, management_no=?, serial_number=?, ip_address=?, manufacturer=?, model_number=?, customer_id=?, status=?, location_id=?, notes=?, sort_order=?, updated_by=? WHERE id=?',
         [$v['name'], $v['condition_code'], $v['management_no'], $v['serial_number'], $v['ip_address'], $v['manufacturer'], $v['model_number'], $v['customer_id'], $v['status'], $v['location_id'], $v['notes'],
          $v['sort_order'] ?? (int)$unit['sort_order'], actor_name(), $unit['id']]);
-    flash_set('success', '内訳を更新しました。');
-    redirect('item', ['id' => $unit['item_id']]);
+    $moved = (int)$v['item_id'] !== (int)$unit['item_id'];
+    if ($moved) {
+        $pdo = db();
+        $pdo->beginTransaction();
+        move_unit_to_item((int)$unit['id'], (int)$unit['item_id'], (int)$v['item_id']);
+        $pdo->commit();
+    }
+    flash_set('success', '品名を更新しました。' . ($moved ? '(カテゴリ「' . db_val('SELECT item_name FROM inventory_items WHERE id = ?', [$v['item_id']]) . '」へ移動しました。棚卸履歴と持ち出し記録も移動先に付け替えました)' : ''));
+    redirect('item', ['id' => $v['item_id']]);
 }
 
 if ($action === 'toggle_active' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -76,7 +88,7 @@ if ($action === 'toggle_active' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $unit = unit_load((int)input_int('id'));
     $to = (int)$unit['is_active'] === 1 ? 0 : 1;
     db_exec('UPDATE inventory_units SET is_active = ?, updated_by = ? WHERE id = ?', [$to, actor_name(), $unit['id']]);
-    flash_set('success', $to ? '内訳を再有効化しました。' : '内訳を無効にしました(棚卸履歴は残ります)。');
+    flash_set('success', $to ? '品名を再有効化しました。' : '品名を無効にしました(棚卸履歴は残ります)。');
     redirect('item', ['id' => $unit['item_id']]);
 }
 

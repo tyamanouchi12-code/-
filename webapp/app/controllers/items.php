@@ -1,13 +1,13 @@
 <?php
-// 品目(=カテゴリ単位)の一覧 / 登録・編集 / 詳細 / 無効化
-// 品目の下に「内訳」(inventory_units: 実物の種類・個体)がぶら下がる
+// カテゴリ(=カテゴリ単位)の一覧 / 登録・編集 / 詳細 / 無効化
+// カテゴリの下に「品名」(inventory_units: 実物の種類・個体)がぶら下がる
 
 function item_load(int $id): array
 {
     $it = db_row('SELECT * FROM inventory_items WHERE id = ?', [$id]);
     if (!$it) {
         http_response_code(404);
-        render('error', ['title' => '品目が見つかりません', 'message' => '指定された品目は存在しません。']);
+        render('error', ['title' => 'カテゴリが見つかりません', 'message' => '指定されたカテゴリは存在しません。']);
         exit;
     }
     return $it;
@@ -23,7 +23,7 @@ function item_masters(): array
     ];
 }
 
-/** 品目の内訳(有効のみ、または全部) */
+/** カテゴリの品名(有効のみ、または全部) */
 function item_units(int $itemId, bool $activeOnly = true): array
 {
     return db_all('SELECT u.*, l.name AS location_name, cu.name AS customer_name FROM inventory_units u
@@ -46,7 +46,7 @@ if ($page === 'items') {
     $items = db_all('SELECT i.*, c.name AS category_name, l.name AS location_name FROM inventory_items i
                      LEFT JOIN categories c ON c.id = i.category_id LEFT JOIN locations l ON l.id = i.location_id'
                     . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . ' ORDER BY i.sort_order, i.id', $params);
-    // 内訳(絞り込み条件は内訳に適用)
+    // 品名(絞り込み条件は品名に適用)
     $uw = ['u.is_active = 1'];
     $up = [];
     if ($f['q'] !== null) {
@@ -74,7 +74,7 @@ if ($page === 'items') {
     foreach ($unitsByItem as $list) { foreach ($list as $u) { $allUnitIds[] = (int)$u['id']; } }
     $unitStock = unit_stock_summary($allUnitIds);
     $latest = latest_confirmed_count();
-    render('items/list', ['title' => '品目一覧', 'items' => $items, 'unitsByItem' => $unitsByItem, 'f' => $f, 'latest' => $latest,
+    render('items/list', ['title' => 'カテゴリ一覧', 'items' => $items, 'unitsByItem' => $unitsByItem, 'f' => $f, 'latest' => $latest,
                           'stock' => $stock, 'unitStock' => $unitStock] + item_masters());
 }
 
@@ -83,7 +83,7 @@ if ($page === 'item' && $action === '') {
     $item = item_load((int)input_int('id', $_GET));
     $units = item_units((int)$item['id'], false);
     $unitStock = unit_stock_summary(array_map(fn($u) => (int)$u['id'], $units));
-    // 棚卸履歴(品目合計)
+    // 棚卸履歴(カテゴリ合計)
     $history = db_all('SELECT c.id AS count_id, c.count_name, c.base_date, c.status, d.count_quantity, d.counted_by, d.counted_at
                        FROM inventory_count_details d JOIN inventory_counts c ON c.id = d.count_id
                        WHERE d.item_id = ? ORDER BY c.base_date, c.id', [$item['id']]);
@@ -97,7 +97,7 @@ if ($page === 'item' && $action === '') {
     }
     unset($hrow);
     $history = array_reverse($history);
-    // 内訳ごとの棚卸結果 [count_id][unit_id] => counted_quantity
+    // 品名ごとの棚卸結果 [count_id][unit_id] => counted_quantity
     $unitHistory = [];
     foreach (db_all('SELECT r.unit_id, r.count_id, r.counted_quantity, r.result FROM inventory_count_unit_results r JOIN inventory_units u ON u.id = r.unit_id WHERE u.item_id = ?', [$item['id']]) as $r) {
         $unitHistory[(int)$r['count_id']][(int)$r['unit_id']] = $r['counted_quantity'];
@@ -108,7 +108,7 @@ if ($page === 'item' && $action === '') {
         'location' => db_val('SELECT name FROM locations WHERE id = ?', [$item['location_id']]),
         'category' => db_val('SELECT name FROM categories WHERE id = ?', [$item['category_id']]),
     ];
-    render('items/detail', ['title' => '品目詳細', 'item' => $item, 'units' => $units, 'unitStock' => $unitStock, 'history' => $history, 'unitHistory' => $unitHistory,
+    render('items/detail', ['title' => 'カテゴリ詳細', 'item' => $item, 'units' => $units, 'unitStock' => $unitStock, 'history' => $history, 'unitHistory' => $unitHistory,
                             'lookup' => $lookup, 'stock' => $stock, 'checkouts' => $checkouts, 'latestCount' => latest_confirmed_count()] + item_masters());
 }
 
@@ -119,10 +119,10 @@ if ($page === 'item' && ($action === 'new' || $action === 'edit')) {
         'location_id' => null, 'notes' => '', 'is_active' => 1, 'sort_order' => null,
     ];
     $units = $item['id'] ? item_units((int)$item['id']) : [];
-    render('items/form', ['title' => $action === 'edit' ? '品目編集' : '品目登録', 'item' => $item, 'units' => $units, 'errors' => []] + item_masters());
+    render('items/form', ['title' => $action === 'edit' ? 'カテゴリ編集' : 'カテゴリ登録', 'item' => $item, 'units' => $units, 'errors' => []] + item_masters());
 }
 
-/** フォームの内訳行を正規化して返す(空行は除外)。エラーがあれば $errors に追加 */
+/** フォームの品名行を正規化して返す(空行は除外)。エラーがあれば $errors に追加 */
 function item_units_from_post(array &$errors): array
 {
     $rows = [];
@@ -154,23 +154,23 @@ function item_units_from_post(array &$errors): array
             continue;   // 空行
         }
         if ($u['name'] === null) {
-            $errors[] = "内訳の {$n} 行目: 内訳名(品名)を入力してください。";
+            $errors[] = "品名の {$n} 行目: 品名を入力してください。";
         }
         if ($u['condition_code'] !== null && !db_val('SELECT 1 FROM conditions WHERE code = ?', [$u['condition_code']])) {
-            $errors[] = "内訳の {$n} 行目: 状態が不正です。";
+            $errors[] = "品名の {$n} 行目: 状態が不正です。";
         }
         if (!isset(unit_status_options()[$u['status']])) {
-            $errors[] = "内訳の {$n} 行目: 状態(在庫/貸出中…)が不正です。";
+            $errors[] = "品名の {$n} 行目: 状態(在庫/貸出中…)が不正です。";
         }
         if ($u['location_id'] !== null && !db_val('SELECT 1 FROM locations WHERE id = ?', [$u['location_id']])) {
-            $errors[] = "内訳の {$n} 行目: 保管場所が存在しません。";
+            $errors[] = "品名の {$n} 行目: 保管場所が存在しません。";
         }
         $rows[] = $u;
     }
     return $rows;
 }
 
-/** 内訳行を保存(既存は更新、新規は追加)。追加件数を返す */
+/** 品名行を保存(既存は更新、新規は追加)。追加件数を返す */
 function item_units_save(int $itemId, array $rows): int
 {
     $added = 0;
@@ -210,7 +210,7 @@ if ($page === 'item' && $action === 'save' && $_SERVER['REQUEST_METHOD'] === 'PO
         $errors[] = '選択したカテゴリが存在しません。';
     }
     if ($v['item_name'] === null && $v['category_id'] !== null) {
-        $v['item_name'] = db_val('SELECT name FROM categories WHERE id = ?', [$v['category_id']]);   // 品目名はカテゴリ名を既定にする
+        $v['item_name'] = db_val('SELECT name FROM categories WHERE id = ?', [$v['category_id']]);   // カテゴリ名はマスタのカテゴリ名を既定にする
     }
     if (!isset(stock_type_options()[$v['stock_type']])) {
         $errors[] = '在庫区分が不正です。';
@@ -221,7 +221,7 @@ if ($page === 'item' && $action === 'save' && $_SERVER['REQUEST_METHOD'] === 'PO
     $unitRows = item_units_from_post($errors);
     if ($errors) {
         $item = array_merge($existing ?? ['id' => null, 'item_code' => '(自動採番)', 'is_active' => 1], $v, ['id' => $id]);
-        render('items/form', ['title' => $id ? '品目編集' : '品目登録', 'item' => $item, 'units' => $unitRows, 'errors' => $errors] + item_masters());
+        render('items/form', ['title' => $id ? 'カテゴリ編集' : 'カテゴリ登録', 'item' => $item, 'units' => $unitRows, 'errors' => $errors] + item_masters());
         exit;
     }
     $pdo = db();
@@ -231,20 +231,20 @@ if ($page === 'item' && $action === 'save' && $_SERVER['REQUEST_METHOD'] === 'PO
             [$v['item_name'], $v['category_id'], $v['stock_type'], $v['location_id'], $v['notes'], $v['sort_order'] ?? (int)$existing['sort_order'], actor_name(), $id]);
         $added = item_units_save($id, $unitRows);
         $pdo->commit();
-        flash_set('success', '品目を更新しました。' . ($added ? "(内訳を {$added} 件追加)" : ''));
+        flash_set('success', 'カテゴリを更新しました。' . ($added ? "(品名を {$added} 件追加)" : ''));
         redirect('item', ['id' => $id]);
     }
     $sort = $v['sort_order'] ?? ((int)db_val('SELECT COALESCE(MAX(sort_order),0) FROM inventory_items') + 1);
     $newId = db_insert("INSERT INTO inventory_items (item_code, item_name, management_type, category_id, stock_type, location_id, notes, is_active, sort_order, created_by, updated_by)
                         VALUES ('TMP', ?, 'unit', ?, ?, ?, ?, 1, ?, ?, ?)",
         [$v['item_name'], $v['category_id'], $v['stock_type'], $v['location_id'], $v['notes'], $sort, actor_name(), actor_name()]);
-    // 品目コードは既存の最大番号 + 1(内部IDとは別)
+    // カテゴリコードは既存の最大番号 + 1(内部IDとは別)
     $codeNo = (int)db_val("SELECT COALESCE(MAX(CAST(SUBSTRING(item_code, 6) AS UNSIGNED)), 0) FROM inventory_items WHERE item_code REGEXP '^ITEM-[0-9]+$'") + 1;
     $code = sprintf('ITEM-%06d', $codeNo);
     db_exec('UPDATE inventory_items SET item_code = ? WHERE id = ?', [$code, $newId]);
     $added = item_units_save($newId, $unitRows);
     $pdo->commit();
-    flash_set('success', '品目を登録しました(品目コード ' . $code . ')。' . ($added ? "内訳を {$added} 件登録しました。" : ''));
+    flash_set('success', 'カテゴリを登録しました(カテゴリコード ' . $code . ')。' . ($added ? "品名を {$added} 件登録しました。" : ''));
     redirect('item', ['id' => $newId]);
 }
 
@@ -254,7 +254,7 @@ if ($page === 'item' && $action === 'toggle_active' && $_SERVER['REQUEST_METHOD'
     $item = item_load((int)input_int('id'));
     $to = (int)$item['is_active'] === 1 ? 0 : 1;
     db_exec('UPDATE inventory_items SET is_active = ?, updated_by = ? WHERE id = ?', [$to, actor_name(), $item['id']]);
-    flash_set('success', $to ? '品目を再有効化しました。' : '品目を無効にしました(棚卸履歴は残ります)。');
+    flash_set('success', $to ? 'カテゴリを再有効化しました。' : 'カテゴリを無効にしました(棚卸履歴は残ります)。');
     redirect('item', ['id' => $item['id']]);
 }
 

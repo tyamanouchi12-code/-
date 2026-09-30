@@ -1,5 +1,5 @@
 <?php
-// 現在庫と持ち出し状況の計算(品目単位・内訳単位)
+// 現在庫と持ち出し状況の計算(カテゴリ単位・品名単位)
 //
 // 現在庫 = 最新の確定済み棚卸の数量
 //          − その棚卸の確定後に持ち出された数量
@@ -30,7 +30,7 @@ function _stock_finalize(array &$result): void
     unset($s);
 }
 
-/** 品目ID → 在庫情報 */
+/** カテゴリID → 在庫情報 */
 function stock_summary(?array $itemIds = null): array
 {
     $c = latest_confirmed_count();
@@ -67,7 +67,7 @@ function stock_summary(?array $itemIds = null): array
     return $result;
 }
 
-/** 内訳ID → 在庫情報(内訳単位) */
+/** 品名ID → 在庫情報(品名単位) */
 function unit_stock_summary(?array $unitIds = null): array
 {
     $c = latest_confirmed_count();
@@ -126,12 +126,12 @@ function checkout_label(array $co, bool $withUnit = true): string
     return $s;
 }
 
-/** 内訳の表示名(内訳名 + 管理No) */
+/** 品名の表示名(品名 + 管理No) */
 function unit_label(array $u): string
 {
     $name = $u['name'] ?? '';
     if ($name === null || $name === '') {
-        $name = '(内訳名なし)';
+        $name = '(品名なし)';
     }
     if (!empty($u['management_no'])) {
         $name .= ' [' . $u['management_no'] . ']';

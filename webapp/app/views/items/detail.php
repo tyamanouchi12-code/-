@@ -1,9 +1,9 @@
 <div class="page-head">
   <h1><?= h($item['item_code']) ?> <?= h($item['item_name']) ?> <?= (int)$item['is_active'] ? '' : '<span class="badge badge-off">無効</span>' ?></h1>
   <div>
-    <a class="btn" href="<?= h(url('item', ['action' => 'edit', 'id' => $item['id']])) ?>">編集(内訳の追加もこちら)</a>
+    <a class="btn" href="<?= h(url('item', ['action' => 'edit', 'id' => $item['id']])) ?>">編集(品名の追加もこちら)</a>
     <?php if (can('item.deactivate')): ?>
-    <form method="post" action="<?= h(url('item', ['action' => 'toggle_active'])) ?>" class="inline" data-confirm="<?= (int)$item['is_active'] ? 'この品目を無効にします。棚卸履歴は残ります。よろしいですか?' : 'この品目を再有効化します。よろしいですか?' ?>">
+    <form method="post" action="<?= h(url('item', ['action' => 'toggle_active'])) ?>" class="inline" data-confirm="<?= (int)$item['is_active'] ? 'このカテゴリを無効にします。棚卸履歴は残ります。よろしいですか?' : 'このカテゴリを再有効化します。よろしいですか?' ?>">
       <?= csrf_field() ?><input type="hidden" name="id" value="<?= h($item['id']) ?>">
       <button type="submit" class="btn <?= (int)$item['is_active'] ? 'btn-danger' : '' ?>"><?= (int)$item['is_active'] ? '無効にする' : '再有効化' ?></button>
     </form>
@@ -32,23 +32,23 @@
 
 <section>
   <div class="page-head">
-    <h2>内訳(実物の種類・個体) <?= count($units) ?> 件</h2>
-    <a class="btn btn-sm btn-primary" href="<?= h(url('item', ['action' => 'edit', 'id' => $item['id']])) ?>">＋ 内訳を追加</a>
+    <h2>品名(実物の種類・個体) <?= count($units) ?> 件</h2>
+    <a class="btn btn-sm btn-primary" href="<?= h(url('item', ['action' => 'edit', 'id' => $item['id']])) ?>">＋ 品名を追加</a>
   </div>
   <?php if (!$units): ?>
-    <p class="muted">内訳はまだ登録されていません。</p>
+    <p class="muted">品名はまだ登録されていません。</p>
   <?php else: ?>
   <div class="table-wrap"><table class="table table-cards">
-    <thead><tr><th>内訳名(品名)</th><th>状態</th><th>管理No</th><th>シリアル / IP</th><th>メーカー / 型番</th><th>保管場所</th><th class="num">棚卸数</th><th class="num">現在庫</th><th>持ち出し中</th><th>備考</th><th></th></tr></thead>
+    <thead><tr><th>品名</th><th>状態</th><th>管理No</th><th>シリアル / IP</th><th>メーカー / 型番</th><th>保管場所</th><th class="num">棚卸数</th><th class="num">現在庫</th><th>持ち出し中</th><th>備考</th><th></th></tr></thead>
     <tbody>
     <?php foreach ($units as $u): $us = stock_for($unitStock, (int)$u['id']); ?>
       <tr class="<?= (int)$u['is_active'] ? '' : 'row-inactive' ?>">
-        <td data-label="内訳名"><?= $u['name'] === null ? '<span class="muted">(内訳名なし)</span>' : h($u['name']) ?><?= (int)$u['is_active'] ? '' : ' <span class="badge badge-off">無効</span>' ?><?= $u['source_excel_rows'] ? '<br><small class="muted">Excel ' . h(str_replace(';', '、', $u['source_excel_rows'])) . ' 行目</small>' : '' ?></td>
+        <td data-label="品名"><?= $u['name'] === null ? '<span class="muted">(品名なし)</span>' : h($u['name']) ?><?= (int)$u['is_active'] ? '' : ' <span class="badge badge-off">無効</span>' ?><?= $u['source_excel_rows'] ? '<br><small class="muted">Excel ' . h(str_replace(';', '、', $u['source_excel_rows'])) . ' 行目</small>' : '' ?></td>
         <td data-label="状態"><?= h(condition_name($u['condition_code'])) ?></td>
         <td data-label="管理No"><?= h($u['management_no']) ?><?= $u['status'] !== 'in_stock' ? ' <span class="badge">' . h(unit_status_label($u['status'])) . '</span>' : '' ?></td>
         <td data-label="シリアル/IP"><?= h($u['serial_number']) ?><?= $u['ip_address'] ? '<br>' . h($u['ip_address']) : '' ?></td>
         <td data-label="メーカー/型番"><?= h(trim(($u['manufacturer'] ?? '') . ' ' . ($u['model_number'] ?? ''))) ?></td>
-        <td data-label="保管場所"><?= h($u['location_name'] ?? '') ?: '<span class="muted">(品目と同じ)</span>' ?></td>
+        <td data-label="保管場所"><?= h($u['location_name'] ?? '') ?: '<span class="muted">(カテゴリと同じ)</span>' ?></td>
         <td class="num" data-label="棚卸数"><?= $us['latest_qty'] === null ? '<span class="muted">–</span>' : h($us['latest_qty']) ?></td>
         <td class="num" data-label="現在庫"><?= $us['current'] === null ? '<span class="muted">–</span>' : '<strong>' . h($us['current']) . '</strong>' ?></td>
         <td class="checkout-cell" data-label="持ち出し中"><?php foreach ($us['open'] as $co): ?><span class="badge badge-out"><?= h(checkout_label($co, false)) ?></span><?php endforeach; ?></td>
@@ -67,7 +67,7 @@
     <p class="muted">持ち出しの記録はありません。</p>
   <?php else: ?>
   <div class="table-wrap"><table class="table">
-    <thead><tr><th>状態</th><th>内訳</th><th>数量</th><th>持ち出した人</th><th>持ち出し日時</th><th>戻し日時</th><th>戻し登録者</th><th>メモ</th><th>登録者</th></tr></thead>
+    <thead><tr><th>状態</th><th>品名</th><th>数量</th><th>持ち出した人</th><th>持ち出し日時</th><th>戻し日時</th><th>戻し登録者</th><th>メモ</th><th>登録者</th></tr></thead>
     <tbody>
     <?php foreach ($checkouts as $co): ?>
       <tr>
@@ -88,12 +88,12 @@
 </section>
 
 <section>
-  <h2>棚卸履歴(品目合計と内訳)</h2>
+  <h2>棚卸履歴(カテゴリ合計と品名)</h2>
   <?php if (!$history): ?>
     <p class="muted">棚卸履歴はありません。</p>
   <?php else: ?>
   <div class="table-wrap"><table class="table">
-    <thead><tr><th>棚卸</th><th>基準日</th><th>状態</th><th class="num">合計</th><th class="num">前回</th><th class="num">差異</th><th>内訳ごとの数量</th><th>担当者</th></tr></thead>
+    <thead><tr><th>棚卸</th><th>基準日</th><th>状態</th><th class="num">合計</th><th class="num">前回</th><th class="num">差異</th><th>品名ごとの数量</th><th>担当者</th></tr></thead>
     <tbody>
     <?php foreach ($history as $hrow): ?>
       <tr>

@@ -1,5 +1,5 @@
 <?php
-// 備品の持ち出し / 戻し(スマホ向け)。内訳(実物の種類・個体)単位で記録する
+// 備品の持ち出し / 戻し(スマホ向け)。品名(実物の種類・個体)単位で記録する
 
 $mode = input_str('mode', $_GET, 10) === 'in' ? 'in' : 'out';
 
@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'out') {
     $unit = $unitId ? db_row('SELECT u.*, i.item_name, i.is_active AS item_active FROM inventory_units u JOIN inventory_items i ON i.id = u.item_id WHERE u.id = ? AND u.is_active = 1', [$unitId]) : null;
     $errors = [];
     if (!$unit) {
-        $errors[] = '品目と内訳を選択してください。';
+        $errors[] = 'カテゴリと品名を選択してください。';
     } else {
         $isUnit = $unit['management_no'] !== null && $unit['management_no'] !== '';
         if ($isUnit) {

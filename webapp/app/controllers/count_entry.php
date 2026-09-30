@@ -1,5 +1,5 @@
 <?php
-// 棚卸入力 / 結果表示(内訳ごとに数量を入力し、品目の合計は自動集計)
+// 棚卸入力 / 結果表示(品名ごとに数量を入力し、カテゴリの合計は自動集計)
 
 $count = db_row('SELECT * FROM inventory_counts WHERE id = ?', [(int)input_int('id', $_GET) ?: (int)input_int('id')]);
 if (!$count) {
@@ -24,7 +24,7 @@ if ($prevCount) {
     }
 }
 
-// 対象品目: 有効な品目 + この棚卸に明細がある品目
+// 対象カテゴリ: 有効なカテゴリ + この棚卸に明細があるカテゴリ
 $items = db_all('SELECT i.*, l.name AS location_name, d.id AS detail_id, d.count_quantity, d.counted_by, d.counted_at
                  FROM inventory_items i
                  LEFT JOIN locations l ON l.id = i.location_id
@@ -35,7 +35,7 @@ $itemById = [];
 foreach ($items as $it) {
     $itemById[(int)$it['id']] = $it;
 }
-// 対象内訳: 有効な内訳 + この棚卸に結果がある内訳
+// 対象品名: 有効な品名 + この棚卸に結果がある品名
 $unitsByItem = [];
 $unitById = [];
 foreach (db_all("SELECT u.*, COALESCE(l2.name, l1.name) AS location_name, COALESCE(u.location_id, i.location_id) AS eff_location_id,
@@ -53,26 +53,8 @@ foreach (db_all("SELECT u.*, COALESCE(l2.name, l1.name) AS location_name, COALES
     $unitById[(int)$u['id']] = $u;
 }
 
-/** 品目の明細を内訳結果から再集計して保存 */
-function recompute_item_detail(int $countId, int $itemId, ?int $locationId): array
-{
-    $agg = db_row('SELECT SUM(r.counted_quantity IS NOT NULL) AS n, SUM(COALESCE(r.counted_quantity,0)) AS total
-                   FROM inventory_count_unit_results r JOIN inventory_units u ON u.id = r.unit_id WHERE r.count_id = ? AND u.item_id = ?', [$countId, $itemId]);
-    $qty = (int)($agg['n'] ?? 0) > 0 ? (int)$agg['total'] : null;
-    $cs = $qty === null ? 'unconfirmed' : 'confirmed';
-    $existing = db_row('SELECT id, count_quantity FROM inventory_count_details WHERE count_id = ? AND item_id = ?', [$countId, $itemId]);
-    if ($existing) {
-        $changed = (string)$existing['count_quantity'] !== (string)$qty;
-        db_exec('UPDATE inventory_count_details SET count_quantity = ?, confirm_status = ?, location_id_at_count = ?, updated_by = ?,
-                    counted_by = ?, counted_at = NOW() WHERE id = ?', [$qty, $cs, $locationId, actor_name(), actor_name(), $existing['id']]);
-    } else {
-        db_exec('INSERT INTO inventory_count_details (count_id, item_id, count_quantity, confirm_status, location_id_at_count, counted_by, counted_at, created_by, updated_by)
-                 VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)', [$countId, $itemId, $qty, $cs, $locationId, actor_name(), actor_name(), actor_name()]);
-    }
-    return ['qty' => $qty, 'counted_by' => actor_name(), 'counted_at' => fmt_datetime(now_str())];
-}
 
-// ---------------------------------------------------------------- 保存(全体 / 内訳1行)
+// ---------------------------------------------------------------- 保存(全体 / 品名1行)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
     $isAjax = ($_POST['ajax'] ?? '') === '1';
     $saveUnit = input_int('save_unit');
@@ -150,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
     }
     $pdo->commit();
     if ($saveUnit !== null && !isset($savedUnits[$saveUnit])) {
-        $respond(false, '対象の内訳が見つかりません。');
+        $respond(false, '対象の品名が見つかりません。');
     }
     // 「棚卸を締める」: 保存に続けて全体確定
     if (($_POST['close'] ?? '') === '1') {
@@ -161,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
                                    WHERE u.is_active = 1 AND u.status <> 'disposed' AND i.is_active = 1
                                      AND NOT EXISTS (SELECT 1 FROM inventory_count_unit_results r WHERE r.count_id = ? AND r.unit_id = u.id AND r.counted_quantity IS NOT NULL)", [$count['id']]);
         db_exec("UPDATE inventory_counts SET status = 'confirmed', end_date = COALESCE(end_date, CURDATE()), confirmed_by = ?, confirmed_at = NOW() WHERE id = ?", [actor_name(), $count['id']]);
-        $respond(true, '入力内容を登録し、棚卸を締めました(変更 ' . $saved . ' 件)。' . ($unentered > 0 ? "数量未入力の内訳が {$unentered} 件あります。未入力の内訳は履歴に含まれません。" : ''));
+        $respond(true, '入力内容を登録し、棚卸を締めました(変更 ' . $saved . ' 件)。' . ($unentered > 0 ? "数量未入力の品名が {$unentered} 件あります。未入力の品名は履歴に含まれません。" : ''));
     }
     $respond(true, $saveUnit !== null ? '保存しました。' : '途中保存しました(変更 ' . $saved . ' 件)。', ['units' => $savedUnits, 'items' => $itemsOut]);
 }
@@ -170,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
 $locFilter = input_int('location', $_GET);
 $itemFilter = input_int('item', $_GET);
 
-// 品目別集計(絞り込み前の全内訳で計算)
+// カテゴリ別集計(絞り込み前の全品名で計算)
 $byItem = [];
 foreach ($items as $it) {
     $iid = (int)$it['id'];
