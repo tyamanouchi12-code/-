@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'save') {
         if ($saveUnit !== null ? $uid !== $saveUnit : !isset($touchedIn[$uid])) {
             continue;
         }
-        if ($u['management_no'] !== null && $u['management_no'] !== '') {
+        if (unit_is_single($u)) {
             $res = $unitIn[$uid] ?? 'unchecked';
             if (!in_array($res, ['unchecked', 'present', 'absent'], true)) {
                 $res = 'unchecked';

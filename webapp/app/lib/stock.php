@@ -118,8 +118,11 @@ function checkout_label(array $co, bool $withUnit = true): string
         $s .= ' ×' . (int)$co['quantity'];
     }
     if ($withUnit) {
-        $u = $co['management_no'] ?: ($co['unit_name'] ?? '');
-        if ($u !== '' && $u !== null) {
+        $u = (string)($co['unit_name'] ?? '');
+        if (!empty($co['management_no'])) {
+            $u .= ' [No.' . $co['management_no'] . ']';
+        }
+        if ($u !== '') {
             $s = $u . ' → ' . $s;
         }
     }
@@ -134,7 +137,7 @@ function unit_label(array $u): string
         $name = '(品名なし)';
     }
     if (!empty($u['management_no'])) {
-        $name .= ' [' . $u['management_no'] . ']';
+        $name .= ' [No.' . $u['management_no'] . ']';
     }
     return $name;
 }

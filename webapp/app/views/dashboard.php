@@ -44,7 +44,7 @@
       <tr>
         <td><?= h($co['unit_name'] ?? '') ?></td>
         <td><a href="<?= h(url('item', ['id' => $co['item_id']])) ?>"><?= h($item_name_tmp = $co['item_name'] ?? $co['item_code']) ?></a></td>
-        <td><?= $co['management_no'] ? h($co['management_no']) : '×' . h($co['quantity']) ?></td>
+        <td><?= $co['management_no'] ? 'No.' . h($co['management_no']) : '' ?><?= ($co['count_mode'] ?? '') === 'single' ? '' : ' ×' . h($co['quantity']) ?></td>
         <td><?= h($co['checked_out_by_name']) ?></td>
         <td><?= h(fmt_datetime($co['checked_out_at'])) ?></td>
         <td><?= h($co['notes']) ?></td>

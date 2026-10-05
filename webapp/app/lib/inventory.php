@@ -35,3 +35,21 @@ function move_unit_to_item(int $unitId, int $fromItemId, int $toItemId): void
         recompute_item_detail((int)$r['count_id'], $toItemId, $toLoc === null ? null : (int)$toLoc);
     }
 }
+
+/** 次の管理No(重複しない連番) */
+function next_management_no(): int
+{
+    return (int)db_val('SELECT COALESCE(MAX(management_no), 0) + 1 FROM inventory_units');
+}
+
+/** 数え方の選択肢 */
+function count_mode_options(): array
+{
+    return ['quantity' => '個数で数える', 'single' => '1台ずつ(有/無)'];
+}
+
+/** 1台ずつ(有/無)で数える品名か */
+function unit_is_single(array $u): bool
+{
+    return ($u['count_mode'] ?? 'quantity') === 'single';
+}

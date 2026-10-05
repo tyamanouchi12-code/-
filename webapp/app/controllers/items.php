@@ -174,12 +174,12 @@ function item_units_from_post(array &$errors): array
             'id'             => input_int('id', $r),
             'name'           => input_str('name', $r, 200),
             'condition_code' => input_str('condition_code', $r, 20),
-            'management_no'  => input_str('management_no', $r, 50),
+            'count_mode'     => input_str('count_mode', $r, 20) ?? 'quantity',
             'status'         => input_str('status', $r, 20) ?? 'in_stock',
             'location_id'    => input_int('location_id', $r),
-            'notes'          => input_str('notes', $r, 500),
+            'notes'          => input_str('notes', $r, 2000),
         ];
-        $empty = $u['name'] === null && $u['management_no'] === null && $u['notes'] === null;
+        $empty = $u['name'] === null && $u['notes'] === null;
         if ($empty && $u['id'] === null) {
             continue;   // 空行
         }
@@ -188,6 +188,9 @@ function item_units_from_post(array &$errors): array
         }
         if ($u['condition_code'] !== null && !db_val('SELECT 1 FROM conditions WHERE code = ?', [$u['condition_code']])) {
             $errors[] = "品名の {$n} 行目: 状態が不正です。";
+        }
+        if (!isset(count_mode_options()[$u['count_mode']])) {
+            $errors[] = "品名の {$n} 行目: 数え方が不正です。";
         }
         if (!isset(unit_status_options()[$u['status']])) {
             $errors[] = "品名の {$n} 行目: 状態(在庫/貸出中…)が不正です。";
@@ -207,14 +210,14 @@ function item_units_save(int $itemId, array $rows): int
     $sort = (int)db_val('SELECT COALESCE(MAX(sort_order),0) FROM inventory_units WHERE item_id = ?', [$itemId]);
     foreach ($rows as $u) {
         if ($u['id'] !== null) {
-            db_exec('UPDATE inventory_units SET name=?, condition_code=?, management_no=?, status=?, location_id=?, notes=?, updated_by=?
+            db_exec('UPDATE inventory_units SET name=?, condition_code=?, count_mode=?, status=?, location_id=?, notes=?, updated_by=?
                      WHERE id=? AND item_id=?',
-                [$u['name'], $u['condition_code'], $u['management_no'], $u['status'], $u['location_id'], $u['notes'], actor_name(), $u['id'], $itemId]);
+                [$u['name'], $u['condition_code'], $u['count_mode'], $u['status'], $u['location_id'], $u['notes'], actor_name(), $u['id'], $itemId]);
         } else {
             $sort += 10;
-            db_insert('INSERT INTO inventory_units (item_id, name, condition_code, management_no, status, location_id, notes, is_active, sort_order, created_by, updated_by)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)',
-                [$itemId, $u['name'], $u['condition_code'], $u['management_no'], $u['status'], $u['location_id'], $u['notes'], $sort, actor_name(), actor_name()]);
+            db_insert('INSERT INTO inventory_units (item_id, name, condition_code, count_mode, management_no, status, location_id, notes, is_active, sort_order, created_by, updated_by)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)',
+                [$itemId, $u['name'], $u['condition_code'], $u['count_mode'], next_management_no(), $u['status'], $u['location_id'], $u['notes'], $sort, actor_name(), actor_name()]);
             $added++;
         }
     }

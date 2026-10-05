@@ -14,7 +14,7 @@ if ($lastConfirmed) {
                                   SUM(CASE WHEN confirm_status = \'needs_check\' THEN 1 ELSE 0 END) AS needs_check
                            FROM inventory_count_details WHERE count_id = ?', [$lastConfirmed['id']]);
 }
-$openCheckouts = db_all('SELECT c.*, i.item_name, i.item_code, u.management_no, u.name AS unit_name FROM item_checkouts c JOIN inventory_items i ON i.id = c.item_id LEFT JOIN inventory_units u ON u.id = c.unit_id WHERE c.returned_at IS NULL ORDER BY c.checked_out_at DESC');
+$openCheckouts = db_all('SELECT c.*, i.item_name, i.item_code, u.management_no, u.count_mode, u.name AS unit_name FROM item_checkouts c JOIN inventory_items i ON i.id = c.item_id LEFT JOIN inventory_units u ON u.id = c.unit_id WHERE c.returned_at IS NULL ORDER BY c.checked_out_at DESC');
 $recentUnits = db_all('SELECT u.*, i.item_name, i.item_code, COALESCE(l2.name, l1.name) AS location_name FROM inventory_units u JOIN inventory_items i ON i.id = u.item_id
                        LEFT JOIN locations l1 ON l1.id = i.location_id LEFT JOIN locations l2 ON l2.id = u.location_id
                        ORDER BY u.updated_at DESC, u.id DESC LIMIT 8');

@@ -15,10 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'out') {
     if (!$unit) {
         $errors[] = 'カテゴリと品名を選択してください。';
     } else {
-        $isUnit = $unit['management_no'] !== null && $unit['management_no'] !== '';
+        $isUnit = unit_is_single($unit);
         if ($isUnit) {
             if (db_val('SELECT id FROM item_checkouts WHERE unit_id = ? AND returned_at IS NULL', [$unit['id']])) {
-                $errors[] = 'その個体(' . $unit['management_no'] . ')はすでに持ち出し中です。';
+                $errors[] = 'その品名(' . unit_label($unit) . ')はすでに持ち出し中です。';
             }
             $qty = 1;
         } elseif ($qty < 1 || $qty > 9999) {
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'out') {
 // ---------------------------------------------------------------- 戻し登録
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'in') {
     $id = input_int('checkout_id');
-    $co = $id ? db_row('SELECT c.*, u.name AS unit_name, u.management_no FROM item_checkouts c LEFT JOIN inventory_units u ON u.id = c.unit_id WHERE c.id = ?', [$id]) : null;
+    $co = $id ? db_row('SELECT c.*, u.name AS unit_name, u.management_no, u.count_mode FROM item_checkouts c LEFT JOIN inventory_units u ON u.id = c.unit_id WHERE c.id = ?', [$id]) : null;
     if (!$co) {
         flash_set('error', '持ち出しの記録が見つかりません。');
         redirect('checkout', ['mode' => 'in']);
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'in') {
     $pdo = db();
     $pdo->beginTransaction();
     db_exec('UPDATE item_checkouts SET returned_at = NOW(), returned_by_name = ?, updated_by = ? WHERE id = ?', [actor_name(), actor_name(), $co['id']]);
-    if ($co['unit_id'] && $co['management_no']) {
+    if ($co['unit_id'] && ($co['count_mode'] ?? '') === 'single') {
         db_exec("UPDATE inventory_units SET status = 'in_stock', updated_by = ? WHERE id = ? AND status = 'lent'", [actor_name(), $co['unit_id']]);
     }
     $pdo->commit();
@@ -77,17 +77,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'in') {
 // ---------------------------------------------------------------- 表示
 $items = db_all('SELECT id, item_code, item_name FROM inventory_items WHERE is_active = 1 ORDER BY sort_order, id');
 $units = [];
-foreach (db_all("SELECT u.id, u.item_id, u.name, u.management_no, u.serial_number, c.name AS condition_name,
+foreach (db_all("SELECT u.id, u.item_id, u.name, u.management_no, u.count_mode, c.name AS condition_name,
                         (SELECT COUNT(*) FROM item_checkouts k WHERE k.unit_id = u.id AND k.returned_at IS NULL) AS open_count
                  FROM inventory_units u LEFT JOIN conditions c ON c.code = u.condition_code
                  WHERE u.is_active = 1 AND u.status <> 'disposed' ORDER BY u.sort_order, u.id") as $u) {
     $units[(int)$u['item_id']][] = $u;
 }
 $users = db_all('SELECT id, display_name FROM users WHERE is_active = 1 ORDER BY display_name');
-$open = db_all('SELECT c.*, i.item_code, i.item_name, u.management_no, u.name AS unit_name
+$open = db_all('SELECT c.*, i.item_code, i.item_name, u.management_no, u.count_mode, u.name AS unit_name
                 FROM item_checkouts c JOIN inventory_items i ON i.id = c.item_id LEFT JOIN inventory_units u ON u.id = c.unit_id
                 WHERE c.returned_at IS NULL ORDER BY c.checked_out_at DESC');
-$recent = db_all('SELECT c.*, i.item_code, i.item_name, u.management_no, u.name AS unit_name
+$recent = db_all('SELECT c.*, i.item_code, i.item_name, u.management_no, u.count_mode, u.name AS unit_name
                   FROM item_checkouts c JOIN inventory_items i ON i.id = c.item_id LEFT JOIN inventory_units u ON u.id = c.unit_id
                   WHERE c.returned_at IS NOT NULL ORDER BY c.returned_at DESC LIMIT 20');
 render('checkout/index', [
