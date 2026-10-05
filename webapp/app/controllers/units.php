@@ -40,6 +40,7 @@ function unit_values_from_post(array &$errors): array
         'name'           => input_str('name', null, 200),
         'condition_code' => input_str('condition_code', null, 20),
         'count_mode'     => input_str('count_mode', null, 20) ?? 'quantity',
+        'use_management_no' => isset($_POST['use_management_no']),
         'customer_id'    => input_int('customer_id'),
         'status'         => input_str('status', null, 20) ?? 'in_stock',
         'location_id'    => input_int('location_id'),
@@ -81,15 +82,15 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = [];
     $v = unit_values_from_post($errors);
     if ($errors) {
-        render('units/form', ['title' => '品名追加', 'unit' => $v + ['id' => null, 'is_active' => 1], 'item' => null, 'locations' => $locations, 'conditions' => $conditions, 'customers' => $customers, 'itemsForMove' => $itemsForMove, 'errors' => $errors]);
+        render('units/form', ['title' => '品名追加', 'unit' => $v + ['id' => null, 'is_active' => 1, 'management_no' => null], 'item' => null, 'locations' => $locations, 'conditions' => $conditions, 'customers' => $customers, 'itemsForMove' => $itemsForMove, 'errors' => $errors]);
         exit;
     }
     $sort = $v['sort_order'] ?? ((int)db_val('SELECT COALESCE(MAX(sort_order),0) FROM inventory_units WHERE item_id = ?', [$v['item_id']]) + 10);
-    $no = next_management_no();
+    $no = management_no_for($v['use_management_no'], null);
     db_insert('INSERT INTO inventory_units (item_id, name, condition_code, count_mode, management_no, customer_id, status, location_id, notes, is_active, sort_order, created_by, updated_by)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)',
         [$v['item_id'], $v['name'], $v['condition_code'], $v['count_mode'], $no, $v['customer_id'], $v['status'], $v['location_id'], $v['notes'], $sort, actor_name(), actor_name()]);
-    flash_set('success', '品名「' . $v['name'] . '」を追加しました(管理No ' . $no . ')。');
+    flash_set('success', '品名「' . $v['name'] . '」を追加しました。' . ($no ? '(管理No ' . fmt_management_no($no) . ')' : ''));
     if (input_str('continue') !== null) {
         redirect('unit', ['action' => 'new', 'item_id' => $v['item_id']]);
     }
@@ -114,8 +115,8 @@ if ($action === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
                               'deleteBlockers' => unit_delete_blockers((int)$unit['id']), 'errors' => $errors]);
         exit;
     }
-    db_exec('UPDATE inventory_units SET name=?, condition_code=?, count_mode=?, customer_id=?, status=?, location_id=?, notes=?, sort_order=?, updated_by=? WHERE id=?',
-        [$v['name'], $v['condition_code'], $v['count_mode'], $v['customer_id'], $v['status'], $v['location_id'], $v['notes'],
+    db_exec('UPDATE inventory_units SET name=?, condition_code=?, count_mode=?, management_no=?, customer_id=?, status=?, location_id=?, notes=?, sort_order=?, updated_by=? WHERE id=?',
+        [$v['name'], $v['condition_code'], $v['count_mode'], management_no_for($v['use_management_no'], $unit['management_no']), $v['customer_id'], $v['status'], $v['location_id'], $v['notes'],
          $v['sort_order'] ?? (int)$unit['sort_order'], actor_name(), $unit['id']]);
     $moved = (int)$v['item_id'] !== (int)$unit['item_id'];
     if ($moved) {

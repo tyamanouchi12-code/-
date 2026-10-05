@@ -120,7 +120,7 @@ function checkout_label(array $co, bool $withUnit = true): string
     if ($withUnit) {
         $u = (string)($co['unit_name'] ?? '');
         if (!empty($co['management_no'])) {
-            $u .= ' [No.' . $co['management_no'] . ']';
+            $u .= ' [No.' . fmt_management_no($co['management_no']) . ']';
         }
         if ($u !== '') {
             $s = $u . ' → ' . $s;
@@ -137,7 +137,7 @@ function unit_label(array $u): string
         $name = '(品名なし)';
     }
     if (!empty($u['management_no'])) {
-        $name .= ' [No.' . $u['management_no'] . ']';
+        $name .= ' [No.' . fmt_management_no($u['management_no']) . ']';
     }
     return $name;
 }

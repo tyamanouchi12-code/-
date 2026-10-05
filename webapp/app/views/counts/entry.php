@@ -90,10 +90,10 @@ $actionButtons = function () use ($count, $editable) {
       <td colspan="2" data-label=""></td>
     </tr>
     <?php foreach ($grp['units'] as $u): $uid = (int)$u['id']; $isUnit = unit_is_single($u); $n++; ?>
-    <tr class="entry-row <?= $u['counted_quantity'] === null ? 'unentered' : 'entered' ?> <?= (int)($u['is_checked'] ?? 0) ? 'checked-row' : '' ?> <?= $u['diff'] ? 'has-diff' : '' ?> <?= (int)$u['is_active'] ? '' : 'row-inactive' ?>" data-unit="<?= $uid ?>" data-item="<?= $iid ?>" data-cat="<?= $iid ?>" data-prev="<?= h($u['prev_quantity']) ?>" data-text="<?= h(mb_strtolower(($u['name'] ?? '') . ' ' . ($u['management_no'] ?? '') . ' ' . $it['item_name'])) ?>">
+    <tr class="entry-row <?= $u['counted_quantity'] === null ? 'unentered' : 'entered' ?> <?= (int)($u['is_checked'] ?? 0) ? 'checked-row' : '' ?> <?= $u['diff'] ? 'has-diff' : '' ?> <?= (int)$u['is_active'] ? '' : 'row-inactive' ?>" data-unit="<?= $uid ?>" data-item="<?= $iid ?>" data-cat="<?= $iid ?>" data-prev="<?= h($u['prev_quantity']) ?>" data-text="<?= h(mb_strtolower(($u['name'] ?? '') . ' ' . fmt_management_no($u['management_no'] ?? null) . ' ' . $it['item_name'])) ?>">
       <td data-label="確認"><?php if ($editable): ?><input type="checkbox" name="checked[<?= $uid ?>]" value="1" class="check-input" <?= (int)($u['is_checked'] ?? 0) ? 'checked' : '' ?> title="確認済みにチェック"><?php else: ?><?= (int)($u['is_checked'] ?? 0) ? '✓' : '' ?><?php endif; ?></td>
       <td class="num" data-label="#"><?= $n ?></td>
-      <td data-label="品名"><span class="item-name"><?= $u['name'] === null ? '<span class="muted">(品名なし)</span>' : h($u['name']) ?></span><?= $u['management_no'] ? ' <span class="badge">No.' . h($u['management_no']) . '</span>' : '' ?><?= (int)$u['is_active'] ? '' : ' <span class="badge badge-off">無効</span>' ?>
+      <td data-label="品名"><span class="item-name"><?= $u['name'] === null ? '<span class="muted">(品名なし)</span>' : h($u['name']) ?></span><?= $u['management_no'] ? ' <span class="badge">No.' . h(fmt_management_no($u['management_no'])) . '</span>' : '' ?><?= (int)$u['is_active'] ? '' : ' <span class="badge badge-off">無効</span>' ?>
         <?php if ($editable): ?><input type="hidden" name="touched[<?= $uid ?>]" value="1"><?php endif; ?></td>
       <td data-label="状態"><?= h(condition_name($u['condition_code'])) ?></td>
       <td data-label="保管場所"><?= h($u['location_name']) ?></td>

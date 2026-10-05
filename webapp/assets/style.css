@@ -255,3 +255,7 @@ tr.entry-row.checked-row td:first-child { background: #e6f4ec; }
   .cards, .cards-4 { grid-template-columns: 1fr; }
   .userbox .username { display: none; }
 }
+
+/* フォーム内のチェック欄(管理Noで管理する など): チェックボックスと文言を左に並べる */
+.form-grid .inline-check, .table-units .inline-check { display: inline-flex; flex-direction: row; align-items: center; gap: 6px; width: auto; font-weight: normal; margin: 4px 0; }
+.form-grid .inline-check input[type=checkbox], .table-units .inline-check input[type=checkbox] { width: 18px; height: 18px; margin: 0; flex: none; }

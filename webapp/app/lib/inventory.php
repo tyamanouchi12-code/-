@@ -53,3 +53,18 @@ function unit_is_single(array $u): bool
 {
     return ($u['count_mode'] ?? 'quantity') === 'single';
 }
+
+/** 管理No の表示(4桁ゼロ埋め。空なら空文字) */
+function fmt_management_no($n): string
+{
+    return ($n === null || $n === '') ? '' : sprintf('%04d', (int)$n);
+}
+
+/** 管理Noで管理するか(チェック)に応じた保存値。既に番号があれば維持、無ければ採番、管理しないなら空 */
+function management_no_for(bool $use, $current): ?int
+{
+    if (!$use) {
+        return null;
+    }
+    return ($current !== null && $current !== '') ? (int)$current : next_management_no();
+}

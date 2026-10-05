@@ -14,7 +14,7 @@
 
   <fieldset class="span2" id="unit-section">
     <legend>品名(実物の種類・個体)</legend>
-    <p class="hint">1行が「数える単位」です。マウスやケーブルのように個数で数える物は種類ごとに1行(状態が新品と中古で分かれる場合は2行)、PCや無線APのように1台ずつ管理する物は<strong>数え方を「1台ずつ」にして1台1行</strong>にします。管理Noは保存時に自動で振られます。空の行は無視されます。<?php if ($item['id']): ?>登録済みの品名を無効にするには、行の「編集」から行います。<?php endif; ?></p>
+    <p class="hint">1行が「数える単位」です。マウスやケーブルのように個数で数える物は種類ごとに1行(状態が新品と中古で分かれる場合は2行)、PCや無線APのように1台ずつ管理する物は<strong>数え方を「1台ずつ」にして1台1行</strong>にします。管理Noで管理する品名は「管理する」にチェックを入れると、4桁の番号(0001〜)が自動で振られます。空の行は無視されます。<?php if ($item['id']): ?>登録済みの品名を無効にするには、行の「編集」から行います。<?php endif; ?></p>
     <div class="table-wrap"><table class="table table-units" id="unit-table">
       <thead><tr><th>品名 <span class="req">必須</span></th><th>状態</th><th>数え方</th><th>管理No</th><th>保管場所</th><th>備考</th><th></th></tr></thead>
       <tbody>
@@ -23,7 +23,7 @@
           <td><input type="hidden" name="units[<?= $ri ?>][id]" value="<?= h($u['id'] ?? '') ?>"><input type="text" name="units[<?= $ri ?>][name]" value="<?= h($u['name'] ?? '') ?>" maxlength="200" class="w-name"></td>
           <td><select name="units[<?= $ri ?>][condition_code]"><option value="">(未設定)</option><?php foreach ($conditions as $c): ?><option value="<?= h($c['code']) ?>" <?= ($u['condition_code'] ?? null) === $c['code'] ? 'selected' : '' ?>><?= h($c['name']) ?></option><?php endforeach; ?></select></td>
           <td><select name="units[<?= $ri ?>][count_mode]"><?php foreach (count_mode_options() as $k => $v): ?><option value="<?= h($k) ?>" <?= ($u['count_mode'] ?? 'quantity') === $k ? 'selected' : '' ?>><?= h($v) ?></option><?php endforeach; ?></select></td>
-          <td class="muted"><?= !empty($u['management_no']) ? h($u['management_no']) : '自動' ?></td>
+          <td class="nowrap"><label class="inline-check"><input type="checkbox" name="units[<?= $ri ?>][use_management_no]" value="1" <?= (array_key_exists('use_management_no', $u) ? $u['use_management_no'] : !empty($u['management_no'])) ? 'checked' : '' ?>> 管理する</label><?= !empty($u['management_no']) ? ' <span class="muted">' . h(fmt_management_no($u['management_no'])) . '</span>' : '' ?></td>
           <td><select name="units[<?= $ri ?>][location_id]"><option value="">(カテゴリと同じ)</option><?php foreach ($locations as $l): ?><option value="<?= h($l['id']) ?>" <?= ($u['location_id'] ?? null) == $l['id'] ? 'selected' : '' ?>><?= h($l['name']) ?></option><?php endforeach; ?></select></td>
           <td><textarea name="units[<?= $ri ?>][notes]" rows="1" maxlength="2000"><?= h($u['notes'] ?? '') ?></textarea><input type="hidden" name="units[<?= $ri ?>][status]" value="<?= h($u['status'] ?? 'in_stock') ?>"></td>
           <td class="nowrap"><?= !empty($u['id']) ? '<a class="small" href="' . h(url('unit', ['action' => 'edit', 'id' => $u['id']])) . '">編集</a>' : '<button type="button" class="btn btn-sm unit-remove">削除</button>' ?></td>
@@ -36,7 +36,7 @@
         <td><input type="hidden" name="units[__i__][id]" value=""><input type="text" name="units[__i__][name]" maxlength="200" class="w-name"></td>
         <td><select name="units[__i__][condition_code]"><option value="">(未設定)</option><?php foreach ($conditions as $c): ?><option value="<?= h($c['code']) ?>"><?= h($c['name']) ?></option><?php endforeach; ?></select></td>
         <td><select name="units[__i__][count_mode]"><?php foreach (count_mode_options() as $k => $v): ?><option value="<?= h($k) ?>"><?= h($v) ?></option><?php endforeach; ?></select></td>
-        <td class="muted">自動</td>
+        <td class="nowrap"><label class="inline-check"><input type="checkbox" name="units[__i__][use_management_no]" value="1"> 管理する</label></td>
         <td><select name="units[__i__][location_id]"><option value="">(カテゴリと同じ)</option><?php foreach ($locations as $l): ?><option value="<?= h($l['id']) ?>"><?= h($l['name']) ?></option><?php endforeach; ?></select></td>
         <td><textarea name="units[__i__][notes]" rows="1" maxlength="2000"></textarea><input type="hidden" name="units[__i__][status]" value="in_stock"></td>
         <td class="nowrap"><button type="button" class="btn btn-sm unit-remove">削除</button></td>

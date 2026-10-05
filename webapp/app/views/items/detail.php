@@ -51,7 +51,7 @@
       <tr class="<?= (int)$u['is_active'] ? '' : 'row-inactive' ?>">
         <td data-label="品名"><?= $u['name'] === null ? '<span class="muted">(品名なし)</span>' : h($u['name']) ?><?= (int)$u['is_active'] ? '' : ' <span class="badge badge-off">無効</span>' ?><?= $u['source_excel_rows'] ? '<br><small class="muted">Excel ' . h(str_replace(';', '、', $u['source_excel_rows'])) . ' 行目</small>' : '' ?></td>
         <td data-label="状態"><?= h(condition_name($u['condition_code'])) ?></td>
-        <td data-label="管理No"><?= h($u['management_no']) ?><?= $u['status'] !== 'in_stock' ? ' <span class="badge">' . h(unit_status_label($u['status'])) . '</span>' : '' ?></td>
+        <td data-label="管理No"><?= h(fmt_management_no($u['management_no'])) ?><?= $u['status'] !== 'in_stock' ? ' <span class="badge">' . h(unit_status_label($u['status'])) . '</span>' : '' ?></td>
         <td data-label="保管場所"><?= h($u['location_name'] ?? '') ?: '<span class="muted">(カテゴリと同じ)</span>' ?></td>
         <td class="num" data-label="棚卸数"><?= $us['latest_qty'] === null ? '<span class="muted">–</span>' : h($us['latest_qty']) ?></td>
         <td class="num" data-label="現在庫"><?= $us['current'] === null ? '<span class="muted">–</span>' : '<strong>' . h($us['current']) . '</strong>' ?></td>

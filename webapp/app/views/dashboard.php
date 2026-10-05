@@ -44,7 +44,7 @@
       <tr>
         <td><?= h($co['unit_name'] ?? '') ?></td>
         <td><a href="<?= h(url('item', ['id' => $co['item_id']])) ?>"><?= h($item_name_tmp = $co['item_name'] ?? $co['item_code']) ?></a></td>
-        <td><?= $co['management_no'] ? 'No.' . h($co['management_no']) : '' ?><?= ($co['count_mode'] ?? '') === 'single' ? '' : ' ×' . h($co['quantity']) ?></td>
+        <td><?= $co['management_no'] ? 'No.' . h(fmt_management_no($co['management_no'])) : '' ?><?= ($co['count_mode'] ?? '') === 'single' ? '' : ' ×' . h($co['quantity']) ?></td>
         <td><?= h($co['checked_out_by_name']) ?></td>
         <td><?= h(fmt_datetime($co['checked_out_at'])) ?></td>
         <td><?= h($co['notes']) ?></td>
@@ -65,7 +65,7 @@
         <td><?= $u['name'] === null ? '<span class="muted">(品名なし)</span>' : h($u['name']) ?></td>
         <td><a href="<?= h(url('item', ['id' => $u['item_id']])) ?>"><?= h($u['item_name']) ?></a></td>
         <td><?= h(condition_name($u['condition_code'])) ?></td>
-        <td><?= h($u['management_no']) ?></td>
+        <td><?= h(fmt_management_no($u['management_no'])) ?></td>
         <td><?= h($u['location_name']) ?></td>
         <td><?= h(fmt_datetime($u['updated_at'])) ?></td>
         <td><?= h($u['updated_by']) ?></td>

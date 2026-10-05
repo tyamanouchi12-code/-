@@ -53,6 +53,10 @@ if ($page === 'items') {
         $like = '%' . $f['q'] . '%';
         $uw[] = '(u.name LIKE ? OR u.management_no LIKE ? OR u.serial_number LIKE ? OR u.manufacturer LIKE ? OR u.model_number LIKE ? OR u.notes LIKE ? OR i.item_name LIKE ? OR i.item_code LIKE ?)';
         array_push($up, $like, $like, $like, $like, $like, $like, $like, $like);
+        if (preg_match('/^\d{1,9}$/', $f['q'])) {
+            $uw[count($uw) - 1] = '(' . $uw[count($uw) - 1] . ' OR u.management_no = ?)';
+            $up[] = (int)$f['q'];
+        }
     }
     if ($f['location'] !== null) { $uw[] = 'COALESCE(u.location_id, i.location_id) = ?'; $up[] = $f['location']; }
     if ($f['condition'] !== null) {
@@ -175,6 +179,7 @@ function item_units_from_post(array &$errors): array
             'name'           => input_str('name', $r, 200),
             'condition_code' => input_str('condition_code', $r, 20),
             'count_mode'     => input_str('count_mode', $r, 20) ?? 'quantity',
+            'use_management_no' => !empty($r['use_management_no']),
             'status'         => input_str('status', $r, 20) ?? 'in_stock',
             'location_id'    => input_int('location_id', $r),
             'notes'          => input_str('notes', $r, 2000),
@@ -210,14 +215,15 @@ function item_units_save(int $itemId, array $rows): int
     $sort = (int)db_val('SELECT COALESCE(MAX(sort_order),0) FROM inventory_units WHERE item_id = ?', [$itemId]);
     foreach ($rows as $u) {
         if ($u['id'] !== null) {
-            db_exec('UPDATE inventory_units SET name=?, condition_code=?, count_mode=?, status=?, location_id=?, notes=?, updated_by=?
+            $cur = db_val('SELECT management_no FROM inventory_units WHERE id = ? AND item_id = ?', [$u['id'], $itemId]);
+            db_exec('UPDATE inventory_units SET name=?, condition_code=?, count_mode=?, management_no=?, status=?, location_id=?, notes=?, updated_by=?
                      WHERE id=? AND item_id=?',
-                [$u['name'], $u['condition_code'], $u['count_mode'], $u['status'], $u['location_id'], $u['notes'], actor_name(), $u['id'], $itemId]);
+                [$u['name'], $u['condition_code'], $u['count_mode'], management_no_for($u['use_management_no'], $cur), $u['status'], $u['location_id'], $u['notes'], actor_name(), $u['id'], $itemId]);
         } else {
             $sort += 10;
             db_insert('INSERT INTO inventory_units (item_id, name, condition_code, count_mode, management_no, status, location_id, notes, is_active, sort_order, created_by, updated_by)
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)',
-                [$itemId, $u['name'], $u['condition_code'], $u['count_mode'], next_management_no(), $u['status'], $u['location_id'], $u['notes'], $sort, actor_name(), actor_name()]);
+                [$itemId, $u['name'], $u['condition_code'], $u['count_mode'], management_no_for($u['use_management_no'], null), $u['status'], $u['location_id'], $u['notes'], $sort, actor_name(), actor_name()]);
             $added++;
         }
     }

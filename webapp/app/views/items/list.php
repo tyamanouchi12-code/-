@@ -35,7 +35,7 @@
       <tr class="unit-line" data-item="<?= $iid ?>">
         <td data-label="品名"><?= $u['name'] === null ? '<span class="muted">(品名なし)</span>' : h($u['name']) ?></td>
         <td data-label="状態"><?= h(condition_name($u['condition_code'])) ?></td>
-        <td data-label="管理No"><?= h($u['management_no']) ?><?= $u['status'] !== 'in_stock' ? ' <span class="badge">' . h(unit_status_label($u['status'])) . '</span>' : '' ?></td>
+        <td data-label="管理No"><?= h(fmt_management_no($u['management_no'])) ?><?= $u['status'] !== 'in_stock' ? ' <span class="badge">' . h(unit_status_label($u['status'])) . '</span>' : '' ?></td>
         <td data-label="保管場所"><?= h($u['location_name']) ?></td>
         <td class="num" data-label="棚卸数"><?= $us['latest_qty'] === null ? '<span class="muted">–</span>' : h($us['latest_qty']) ?></td>
         <td class="num" data-label="現在庫"><?= $us['current'] === null ? '<span class="muted">–</span>' : '<strong>' . h($us['current']) . '</strong>' ?></td>

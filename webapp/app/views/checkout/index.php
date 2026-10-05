@@ -21,8 +21,8 @@
     <select name="unit_id" id="unit-select" required>
       <option value="">先にカテゴリを選択してください</option>
       <?php foreach ($units as $iid => $list): foreach ($list as $u): $isUnit = unit_is_single($u); ?>
-        <option value="<?= h($u['id']) ?>" data-item="<?= h($iid) ?>" data-unit="<?= $isUnit ? '1' : '0' ?>" data-text="<?= h(mb_strtolower(($u['name'] ?? '') . ' ' . ($u['management_no'] ?? ''))) ?>" <?= ($isUnit && (int)$u['open_count']) ? 'disabled' : '' ?>>
-          <?= h($u['name'] ?? '(品名なし)') ?><?= $u['condition_name'] ? '(' . h($u['condition_name']) . ')' : '' ?><?= ' [No.' . h($u['management_no']) . ']' ?><?= ($isUnit && (int)$u['open_count']) ? '(持ち出し中)' : '' ?>
+        <option value="<?= h($u['id']) ?>" data-item="<?= h($iid) ?>" data-unit="<?= $isUnit ? '1' : '0' ?>" data-text="<?= h(mb_strtolower(($u['name'] ?? '') . ' ' . fmt_management_no($u['management_no'] ?? null))) ?>" <?= ($isUnit && (int)$u['open_count']) ? 'disabled' : '' ?>>
+          <?= h($u['name'] ?? '(品名なし)') ?><?= $u['condition_name'] ? '(' . h($u['condition_name']) . ')' : '' ?><?= $u['management_no'] ? ' [No.' . h(fmt_management_no($u['management_no'])) . ']' : '' ?><?= ($isUnit && (int)$u['open_count']) ? '(持ち出し中)' : '' ?>
         </option>
       <?php endforeach; endforeach; ?>
     </select>
@@ -50,7 +50,7 @@
   <?php foreach ($open as $co): ?>
     <div class="card card-row">
       <div>
-        <div class="card-title"><?= h($co['unit_name'] ?? $co['item_name']) ?><?= $co['management_no'] ? ' <span class="badge">No.' . h($co['management_no']) . '</span>' : '' ?><?= (int)$co['quantity'] !== 1 ? ' ×' . (int)$co['quantity'] : '' ?> <small class="muted"><?= h($co['item_name']) ?></small></div>
+        <div class="card-title"><?= h($co['unit_name'] ?? $co['item_name']) ?><?= $co['management_no'] ? ' <span class="badge">No.' . h(fmt_management_no($co['management_no'])) . '</span>' : '' ?><?= (int)$co['quantity'] !== 1 ? ' ×' . (int)$co['quantity'] : '' ?> <small class="muted"><?= h($co['item_name']) ?></small></div>
         <div class="card-sub"><?= h($co['checked_out_by_name'] ?: '(名前なし)') ?> ・ <?= h(fmt_datetime($co['checked_out_at'])) ?><?= $co['notes'] ? ' ・ ' . h($co['notes']) : '' ?></div>
       </div>
       <form method="post" action="<?= h(url('checkout', ['action' => 'in'])) ?>" data-confirm="「<?= h($co['unit_name'] ?? $co['item_name']) ?>」を戻しにしますか?">
@@ -68,7 +68,7 @@
   <?php foreach ($recent as $co): ?>
     <div class="card card-row">
       <div>
-        <div class="card-title"><?= h($co['unit_name'] ?? $co['item_name']) ?><?= $co['management_no'] ? ' <span class="badge">No.' . h($co['management_no']) . '</span>' : '' ?><?= (int)$co['quantity'] !== 1 ? ' ×' . (int)$co['quantity'] : '' ?></div>
+        <div class="card-title"><?= h($co['unit_name'] ?? $co['item_name']) ?><?= $co['management_no'] ? ' <span class="badge">No.' . h(fmt_management_no($co['management_no'])) . '</span>' : '' ?><?= (int)$co['quantity'] !== 1 ? ' ×' . (int)$co['quantity'] : '' ?></div>
         <div class="card-sub"><?= h($co['checked_out_by_name'] ?: '(名前なし)') ?> ・ 持出 <?= h(fmt_datetime($co['checked_out_at'])) ?> → 戻し <?= h(fmt_datetime($co['returned_at'])) ?></div>
       </div>
     </div>
